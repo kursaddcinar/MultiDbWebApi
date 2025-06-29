@@ -1,0 +1,386 @@
+[
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLBANKAHRController",
+    "Method": "GetBankaHR",
+    "RelativePath": "api/TBLBANKAHR/GetBankaHR",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLBankaRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLBANKASBController",
+    "Method": "GetBankaSB",
+    "RelativePath": "api/TBLBANKASB/GetBankaSB",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLBankaRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLCARIHRController",
+    "Method": "GetCariHR",
+    "RelativePath": "api/TBLCARIHR/GetCariHR",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLCarihrRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLCARIREHBERController",
+    "Method": "GetCARIREHBER",
+    "RelativePath": "api/TBLCARIREHBER/GetCARIREHBER",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLCARIREHBERRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLCARISBController",
+    "Method": "GetCariSB",
+    "RelativePath": "api/TBLCARISB/GetCariSB",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLCarisbRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLCEKSENETController",
+    "Method": "GetCekSenet",
+    "RelativePath": "api/TBLCEKSENET/GetCekSenet",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLCeksenetRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLCEKSENETwithSERIAL",
+    "Method": "GetCekSenetSerial",
+    "RelativePath": "api/TBLCEKSENETwithSERIAL/GetCekSenetSerial",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLCeksenetwithserialnoRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLDEPOSAYIMREHBERController",
+    "Method": "GetDepoSayimRehber",
+    "RelativePath": "api/TBLDEPOSAYIMREHBER/GetDepoSayimRehber",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLSTOKREHBERRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLDEPOSBController",
+    "Method": "GetDepoSB",
+    "RelativePath": "api/TBLDEPOSB/GetDepoSB",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLDepoRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLISEMRIHRController",
+    "Method": "GetIsEmriHR",
+    "RelativePath": "api/TBLISEMRIHR/GetIsEmriHR",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLIsemriRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLISEMRISBController",
+    "Method": "GetIsEmriSB",
+    "RelativePath": "api/TBLISEMRISB/GetIsEmriSB",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLIsemriRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLKASAHRController",
+    "Method": "GetKasaHR",
+    "RelativePath": "api/TBLKASAHR/GetKasaHR",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLKasaRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLKASASBController",
+    "Method": "GetKasaSB",
+    "RelativePath": "api/TBLKASASB/GetKasaSB",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLKasaRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLPANELKALITEController",
+    "Method": "ExecuteFPPanelKaliteSave",
+    "RelativePath": "api/TBLPANELKALITE/execute",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "tb",
+        "Type": "MultiDbWebApi.Models.TBLKALITEKONTROL",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLRECETEHRController",
+    "Method": "GetReceteHR",
+    "RelativePath": "api/TBLRECETEHR/GetReceteHR",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLReceteRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLRECETESBController",
+    "Method": "GetReceteSB",
+    "RelativePath": "api/TBLRECETESB/GetReceteSB",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLReceteRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLSTOKHRController",
+    "Method": "GetStokHR",
+    "RelativePath": "api/TBLSTOKHR/GetStokHR",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLStokhrRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLSTOKREHBERController",
+    "Method": "GetStokREHBER",
+    "RelativePath": "api/TBLSTOKREHBER/GetStokREHBER",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLSTOKREHBERRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLSTOKSBController",
+    "Method": "GetStokSB",
+    "RelativePath": "api/TBLSTOKSB/GetStokSB",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLStoksbRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLSTOKSBController2",
+    "Method": "GetStokSB2",
+    "RelativePath": "api/TBLSTOKSBController2/GetStokSB2",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLStoksbRequestDto2",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLURETIMController",
+    "Method": "GetUretim",
+    "RelativePath": "api/TBLURETIM/GetUretim",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLUretimRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLURETIMController2",
+    "Method": "GetUretim2",
+    "RelativePath": "api/TBLURETIMController2/GetUretim2",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLUretimRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLURETIMKABULController",
+    "Method": "ExecuteFPROCOPRSAVE",
+    "RelativePath": "api/TBLURETIMKABUL/execute",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestDto",
+        "Type": "MultiDbWebApi.Models.TBLURETIMKABULRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MultiDbWebApi.Controllers.TBLUSERSController",
+    "Method": "GetUsers",
+    "RelativePath": "api/TBLUSERS/GetUsers",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MultiDbWebApi.Models.TBLUsersRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

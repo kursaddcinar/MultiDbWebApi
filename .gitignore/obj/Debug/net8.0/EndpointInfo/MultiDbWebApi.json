@@ -1,0 +1,1167 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "MultiDbWebApi",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/TBLBANKAHR/GetBankaHR": {
+      "post": {
+        "tags": [
+          "TBLBANKAHR"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLBankaRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLBankaRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLBankaRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLBANKASB/GetBankaSB": {
+      "post": {
+        "tags": [
+          "TBLBANKASB"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLBankaRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLBankaRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLBankaRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLCARIHR/GetCariHR": {
+      "post": {
+        "tags": [
+          "TBLCARIHR"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCarihrRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCarihrRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCarihrRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLCARIREHBER/GetCARIREHBER": {
+      "post": {
+        "tags": [
+          "TBLCARIREHBER"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCARIREHBERRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCARIREHBERRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCARIREHBERRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLCARISB/GetCariSB": {
+      "post": {
+        "tags": [
+          "TBLCARISB"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCarisbRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCarisbRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCarisbRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLCEKSENET/GetCekSenet": {
+      "post": {
+        "tags": [
+          "TBLCEKSENET"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCeksenetRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCeksenetRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCeksenetRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLCEKSENETwithSERIAL/GetCekSenetSerial": {
+      "post": {
+        "tags": [
+          "TBLCEKSENETwithSERIAL"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCeksenetwithserialnoRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCeksenetwithserialnoRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLCeksenetwithserialnoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLDEPOSAYIMREHBER/GetDepoSayimRehber": {
+      "post": {
+        "tags": [
+          "TBLDEPOSAYIMREHBER"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLSTOKREHBERRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLSTOKREHBERRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLSTOKREHBERRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLDEPOSB/GetDepoSB": {
+      "post": {
+        "tags": [
+          "TBLDEPOSB"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLDepoRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLDepoRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLDepoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLISEMRIHR/GetIsEmriHR": {
+      "post": {
+        "tags": [
+          "TBLISEMRIHR"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLIsemriRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLIsemriRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLIsemriRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLISEMRISB/GetIsEmriSB": {
+      "post": {
+        "tags": [
+          "TBLISEMRISB"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLIsemriRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLIsemriRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLIsemriRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLKASAHR/GetKasaHR": {
+      "post": {
+        "tags": [
+          "TBLKASAHR"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKasaRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKasaRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKasaRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLKASASB/GetKasaSB": {
+      "post": {
+        "tags": [
+          "TBLKASASB"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKasaRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKasaRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKasaRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLPANELKALITE/execute": {
+      "post": {
+        "tags": [
+          "TBLPANELKALITE"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKALITEKONTROL"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKALITEKONTROL"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLKALITEKONTROL"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLRECETEHR/GetReceteHR": {
+      "post": {
+        "tags": [
+          "TBLRECETEHR"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLReceteRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLReceteRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLReceteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLRECETESB/GetReceteSB": {
+      "post": {
+        "tags": [
+          "TBLRECETESB"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLReceteRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLReceteRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLReceteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLSTOKHR/GetStokHR": {
+      "post": {
+        "tags": [
+          "TBLSTOKHR"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStokhrRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStokhrRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStokhrRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLSTOKREHBER/GetStokREHBER": {
+      "post": {
+        "tags": [
+          "TBLSTOKREHBER"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLSTOKREHBERRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLSTOKREHBERRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLSTOKREHBERRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLSTOKSB/GetStokSB": {
+      "post": {
+        "tags": [
+          "TBLSTOKSB"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStoksbRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStoksbRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStoksbRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLSTOKSBController2/GetStokSB2": {
+      "post": {
+        "tags": [
+          "TBLSTOKSBController2"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStoksbRequestDto2"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStoksbRequestDto2"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLStoksbRequestDto2"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLURETIM/GetUretim": {
+      "post": {
+        "tags": [
+          "TBLURETIM"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUretimRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUretimRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUretimRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLURETIMController2/GetUretim2": {
+      "post": {
+        "tags": [
+          "TBLURETIMController2"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUretimRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUretimRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUretimRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLURETIMKABUL/execute": {
+      "post": {
+        "tags": [
+          "TBLURETIMKABUL"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLURETIMKABULRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLURETIMKABULRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLURETIMKABULRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TBLUSERS/GetUsers": {
+      "post": {
+        "tags": [
+          "TBLUSERS"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUsersRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUsersRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TBLUsersRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TBLBankaRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "detayTur": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankaKod": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLCARIREHBERRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "gelen": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLCarihrRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "cariKod": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLCarisbRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLCeksenetRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "tur": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLCeksenetwithserialnoRequestDto": {
+        "type": "object",
+        "properties": {
+          "seriNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLDepoRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLIsemriRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "detayTur": {
+            "type": "string",
+            "nullable": true
+          },
+          "sipBelgeNo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLKALITEKONTROL": {
+        "type": "object",
+        "properties": {
+          "dbname": {
+            "type": "string",
+            "nullable": true
+          },
+          "kullanicI_NO": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "projE_KODU": {
+            "type": "string",
+            "nullable": true
+          },
+          "tarih": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "kontrollaR_KODU": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL1": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL2": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL3": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL4": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL5": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL6": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL7": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL8": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL9": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL10": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL11": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL12": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL13": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL14": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL15": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL16": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL17": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL18": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL19": {
+            "type": "string",
+            "nullable": true
+          },
+          "kontroL20": {
+            "type": "string",
+            "nullable": true
+          },
+          "aciklamA1": {
+            "type": "string",
+            "nullable": true
+          },
+          "aciklamA2": {
+            "type": "string",
+            "nullable": true
+          },
+          "aciklamA3": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLKasaRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "detayTur": {
+            "type": "string",
+            "nullable": true
+          },
+          "kasaKod": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLReceteRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "detayTur": {
+            "type": "string",
+            "nullable": true
+          },
+          "stokKod": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLSTOKREHBERRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "gelen": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLStokhrRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "stokKod": {
+            "type": "string",
+            "nullable": true
+          },
+          "hrVar": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLStoksbRequestDto": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLStoksbRequestDto2": {
+        "type": "object",
+        "properties": {
+          "databaseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "stokKod": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLURETIMKABULRequestDto": {
+        "type": "object",
+        "properties": {
+          "dbname": {
+            "type": "string",
+            "nullable": true
+          },
+          "isemrI_BELGE_NO": {
+            "type": "string",
+            "nullable": true
+          },
+          "kullanicI_NO": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "depO_KODU": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isleM_DK": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isleM_TIPI": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "opR_KODU_RECID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maK_KODU_RECID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isleM_MIK": {
+            "type": "number",
+            "format": "double"
+          },
+          "kabuL_MIK": {
+            "type": "number",
+            "format": "double"
+          },
+          "reD_MIK": {
+            "type": "number",
+            "format": "double"
+          },
+          "recetehR_RECID": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLUretimRequestDto": {
+        "type": "object",
+        "properties": {
+          "dataBase": {
+            "type": "string",
+            "nullable": true
+          },
+          "kulNo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TBLUsersRequestDto": {
+        "type": "object",
+        "properties": {
+          "kulAdi": {
+            "type": "string",
+            "nullable": true
+          },
+          "kulSifre": {
+            "type": "string",
+            "nullable": true
+          },
+          "extraParam": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
