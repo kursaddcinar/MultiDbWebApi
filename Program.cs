@@ -54,7 +54,7 @@ builder.Services.AddScoped<ITBLCARIREHBERRepository, TBLCARIREHBERRepository>();
 builder.Services.AddScoped<ITBLDEPOSAYIMREHBERRepository, TBLDEPOSAYIMREHBERRepository>();
 
 // JWT Authentication configuration
-var key = Encoding.ASCII.GetBytes("super_secret_key_123!@#");
+var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
