@@ -1,0 +1,657 @@
+uses Zcontents;
+var 
+  frmReceteDetay : TCLForm;
+  pnlCDMain,pnlCDTop,pnlCDKart,pnlCDHareket  : TclProPanel;
+  pnlCDBottom,pnlCDBTKart,pnlCDBTHareket,pnlMemoAdres,pnlMemoCAd: TclProPanel;
+  imgCDKart,imgCDHareket,imgCDDiger : TCLImage;
+  lblCDKart,lblCDHareket,lblCDDiger  : TClProLabel;
+  lstReceteKart : TClProListView;
+  DesignerPanelReceteDetay : TClProListViewDesignerPanel;
+  Recete_KODU,Recete_ADI,lblAd,lblKod
+  lblMiktar,lblBasTarih,lblCDAdres,lblDepo,lblAiklama,lblBakiyet,
+  Recete_MIKTAR,Recete_BASTARIH,Recete_ADRES,Recete_DEPO,Recete_ACIKLAMA,bakiyet  : TClProLabel;
+  JSONObject: TCLJSONQuery;
+  strReceteHareketJSON  : String;
+  grdHareket: TCLStringGrid;
+  btnGetir  : TClProButton;
+  
+  sbStrJsonData: string;  // JSON verisini tutacagiz
+  Sbcounter: Integer;
+  sbJSONDetailObject: TCLJSONQuery;
+  
+  lstReceteRehber : TClProListView;
+
+  zamanlayici: TClTimer;
+  
+  memoAdres,memoCAD : TclMemo;
+
+
+  FrmGiris : TCLForm;
+  pnlReceteGiris  : TclProPanel;
+  searchEdtRehber : TClProSearchEdit;
+  rehberAd,rehberKod,rehberAciklama,rehberDepo  : TClProLabel;
+  DesignerPanelRehber : TClProListViewDesignerPanel;
+  sbRest,hrRest  : TCLRest;
+  
+  pnlCDBTKartMain,pnlCDBTKartLeft,pnlCDBTKartRight,pnlCizgi  : TclProPanel;
+
+
+void modifyHareketGrid;//hareket grid görünüm güncelleme
+var
+  rowLenght,i,j  : Integer;
+{
+  rowLenght=0;
+  i=0;
+  j=0;
+  try
+    while(j <> grdHareket.ColumnCount )
+    {
+      while(i <> grdHareket.RowCount )
+      {
+        if(Length(grdHareket.Cells[j,i])  > rowLenght)
+        {
+          rowLenght=Length(grdHareket.Cells[j,i]);
+        }
+        Inc(i);
+      }
+      if(rowLenght<11)
+        rowLenght=10;
+      grdHareket.Columns[j].Width = frmReceteDetay.clwidth*11*rowLenght/1000*3;//pnl_Recete_detail.Width*rowLenght/100*15/100;
+      rowLenght=0;
+      i=0;
+      Inc(j);
+    }
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message361: ' +LastExceptionMessage);
+  }
+}
+
+void setHareketGrid;//+ // listviewe tiklandiktan sonra Recete harekletlerini gride set ediyoruz 
+Var
+  hrRest  : TCLRest;
+  hrJSONObject: TCLJSONQuery;
+{
+  hrRest=TCLRest.Create;
+  try
+    hrRest.BaseURL = Zcontents.getReceteHR  ;
+    hrRest.Accept = 'application/json';
+    hrRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      hrRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+        '"detayTur":"2"'+','+
+        '"stokKod":"'+lstReceteRehber.clSelectedItemData(clText1)+
+        '"}','application/json');//!!!!!!Recete kod almayi unutma
+    else
+      hrRest.AddBody('{
+      "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+        '"detayTur":"2"'+','+
+        '"stokKod":"'+lstReceteRehber.clSelectedItemData(clText1)+
+        '"}','application/json');//!!!!!!Recete kod almayi unutma
+    //lstReceteKart.clSelectedItemData(clText)
+    hrRest.Execute;
+    
+    hrJSONObject = Clomosy.ClDataSetFromJSON(hrRest.Response);
+    
+    if(hrJSONObject.Found)
+    {
+      frmReceteDetay.RemoveGridBinding('mylink'); 
+      frmReceteDetay.AddNewGridBinding(grdHareket,hrJSONObject, 'mylink');
+      //modifyHareketGrid;
+    }
+    else
+      ShowMessage('Recete hareket bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message00411: ' +LastExceptionMessage);
+  }
+  modifyHareketGrid;
+}
+
+void clickKart;
+{
+  pnlCDBTKart.visible     = True;
+  pnlCDBTHareket.visible  = False;
+  /*
+  pnlCDKart.visible = True;
+  pnlCDHareket.visible = False;
+  */
+  clComponent.SetupComponent(pnlCDKart,'{"BackgroundColor":"#6ffbf2"}');
+  clComponent.SetupComponent(pnlCDHareket,'{"BackgroundColor":"#c0eeba"}');
+  
+  setHareketGrid;
+}
+
+void clickHareket;
+{
+  pnlCDBTKart.visible     = False;
+  pnlCDBTHareket.visible  = True;
+  setHareketGrid;
+  /*
+  pnlCDKart.visible = False;
+  pnlCDHareket.visible = True;
+  */
+  clComponent.SetupComponent(pnlCDKart,'{"BackgroundColor":"#c0eeba"}');
+  clComponent.SetupComponent(pnlCDHareket,'{"BackgroundColor":"#6ffbf2"}');
+}
+
+void clickDiger;
+{
+  pnlCDBTKart.visible     = False;
+  pnlCDBTHareket.visible  = False;
+  
+  
+  clComponent.SetupComponent(pnlCDKart,'{"BackgroundColor":"#c0eeba"}');
+  clComponent.SetupComponent(pnlCDHareket,'{"BackgroundColor":"#c0eeba"}');
+}
+
+void setPanels;
+var
+  kartRest  : TCLRest;
+  kartJSONObject: TCLJSONQuery;
+  kartStrJsonData : String;
+{
+  
+  frmReceteDetay  = TCLForm.Create(Self);
+  kartRest  = TCLRest.Create;
+  
+  pnlCDMain = frmReceteDetay.AddNewProPanel(frmReceteDetay,'pnlCDMain');
+  clComponent.SetupComponent(pnlCDMain,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+    
+  
+  //üst panel
+  pnlCDTop = frmReceteDetay.AddNewProPanel(pnlCDMain,'pnlCDTop');
+  clComponent.SetupComponent(pnlCDTop,'{"Align" : "top","BackgroundColor":"#c0eeba"}');
+  pnlCDTop.height= pnlCDMain.height *12/100;
+  
+  {//üst panel içerikleri
+    pnlCDKart = frmReceteDetay.AddNewProPanel(pnlCDTop,'pnlCDKart');
+    clComponent.SetupComponent(pnlCDKart,'{"Align" : "left","BackgroundColor":"#6ffbf2"}');
+    pnlCDKart.width = pnlCDTop.width  *50/100;
+    {
+      imgCDKart = frmReceteDetay.AddNewImage(pnlCDKart,'imgCDKart');
+      imgCDKart.Align = alCenter;
+      imgCDKart.Height =  pnlCDKart.Height*45/100;
+      imgCDKart.Width =   pnlCDKart.Height*45/100;
+      imgCDKart.Margins.bottom  = pnlCDKart.Height*25/100;
+      frmReceteDetay.setImage(imgCDKart,'https://cdn-icons-png.freepik.com/512/16870/16870828.png');
+      
+      lblCDKart = frmReceteDetay.AddNewProLabel(pnlCDKart, 'lblCDKart', 'Recete Kart');
+      lblCDKart.Align = alCenter;
+      lblCDKart.Height =  pnlCDKart.Height*25/100;
+      lblCDKart.Width =   pnlCDKart.Width *60/100;
+      lblCDKart.Margins.top  = pnlCDKart.Height*40/100;
+      lblCDKart.clProSettings.FontSize = 16;
+      lblCDKart.clProSettings.FontHorzAlign=palCenter;
+      lblCDKart.clProSettings.FontVertAlign=palCenter;
+      lblCDKart.SetclProSettings(lblCDKart.clProSettings);
+    }
+  
+    
+    pnlCDHareket = frmReceteDetay.AddNewProPanel(pnlCDTop,'pnlCDHareket');
+    clComponent.SetupComponent(pnlCDHareket,'{"Align" : "right","BackgroundColor":"#c0eeba"}');
+    pnlCDHareket.width = pnlCDTop.width  *50/100;
+    pnlCDHareket.height= pnlCDTop.height *100/100;
+    {
+      imgCDHareket = frmReceteDetay.AddNewImage(pnlCDHareket,'imgCDHareket');
+      imgCDHareket.Align = alCenter;
+      imgCDHareket.Height =  pnlCDHareket.Height*45/100;
+      imgCDHareket.Width =   pnlCDHareket.Height*45/100;
+      imgCDHareket.Margins.bottom  = pnlCDHareket.Height*30/100;
+      frmReceteDetay.setImage(imgCDHareket,'https://cdn-icons-png.freepik.com/512/1600/1600000.png');
+      
+      lblCDHareket = frmReceteDetay.AddNewProLabel(pnlCDHareket, 'lblCDHareket', 'Bilesenler');
+      lblCDHareket.Align = alCenter;
+      lblCDHareket.Height =  pnlCDHareket.Height*25/100;
+      lblCDHareket.Width =   pnlCDHareket.Width *60/100;
+      lblCDHareket.Margins.top  = pnlCDHareket.Height*40/100;
+      lblCDHareket.SetclProSettings(lblCDKart.clProSettings);
+    }
+  }
+  
+  //alt panel
+  pnlCDBottom = frmReceteDetay.AddNewProPanel(pnlCDMain,'pnlCDBottom');
+  clComponent.SetupComponent(pnlCDBottom,'{"Align" : "bottom","BackgroundColor":"#ffffff"}');
+  pnlCDBottom.height = pnlCDMain.height *85/100;
+  
+  {
+    //ReceteKart panel
+    pnlCDBTKart = frmReceteDetay.AddNewProPanel(pnlCDBottom,'pnlCDBTKart');
+    clComponent.SetupComponent(pnlCDBTKart,'{"Align" : "bottom","BackgroundColor":"#ffffff"}');
+    pnlCDBTKart.height = pnlCDBottom.height *95/100;
+    pnlCDBTKart.visible = true;
+    {
+      
+    }
+    
+    //hareket panel
+    pnlCDBTHareket = frmReceteDetay.AddNewProPanel(pnlCDBottom,'pnlCDBTHareket');
+    clComponent.SetupComponent(pnlCDBTHareket,'{"Align" : "bottom"}');
+    pnlCDBTHareket.height = pnlCDBottom.height *95/100;
+    pnlCDBTHareket.visible = false;
+    
+    {//hareket grid
+      grdHareket = frmReceteDetay.AddNewStringGrid(pnlCDBTHareket, 'grdHareket');
+      grdHareket.Align = alcenter;
+      grdHareket.Width  = pnlCDBTHareket.Width*95/100;
+      grdHareket.height = pnlCDBTHareket.height*95/100;
+      grdHareket.ReadOnly = TRUE;
+      //grdHareket.RotationAngle = 90;
+      //grdHareket.Align = alcenter;
+      //grdHareket.Width  = pnlCDBTHareket.height;
+      //grdHareket.height = pnlCDBTHareket.Width;
+      
+      //frmReceteDetay.AddNewEvent(grdHareket,tbeOnProGridCellClick,'getDetailForm');
+    }
+    
+    
+    
+    
+    
+    lblKod = frmReceteDetay.AddNewProLabel(pnlCDBTKart, 'lblKod', 'Recete kod');
+    lblKod.Align = altop;
+    lblKod.Height =pnlCDBTKart.Height*8/100;
+    lblKod.margins.top  = pnlCDBTKart.Height*10/100;
+    lblKod.clProSettings.FontSize = 15;
+    lblKod.clProSettings.FontVertAlign = palcenter;
+    lblKod.clProSettings.FontHorzAlign = palcenter;
+    lblKod.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblKod.margins.top  = pnlCDBTKart.Height*2/100;
+    lblKod.SetclProSettings(lblKod.clProSettings);
+    
+    pnlMemoCAd = frmReceteDetay.AddNewProPanel(pnlCDBTKart,'pnlMemoCAd');
+    clComponent.SetupComponent(pnlMemoCAd,'{"Align" : "top"}');
+    pnlMemoCAd.Height = pnlCDBTKart.Height*17/100;
+    
+    memoCAD = frmReceteDetay.AddNewMemo(pnlMemoCAd,'memoCAD','');
+    memoCAD.Align = alcenter;
+    memoCAD.width = pnlMemoCAd.width*90/100;
+    memoCAD.Height = pnlMemoCAd.Height*100/100;
+    memoCAD.ReadOnly = True;
+    memoCAD.TextSettings.WordWrap = True;
+    memoCAD.StyledSettings = ssFamily;
+    memoCAD.TextSettings.Font.Size = 24;
+    
+    /*
+    lblAd = frmReceteDetay.AddNewProLabel(pnlCDBTKart, 'lblAd', 'Recete ad');
+    lblAd.Align = altop;
+    lblAd.Height =pnlCDBTKart.Height*11/100;
+    lblAd.clProSettings.FontSize = 24;
+    lblAd.clProSettings.FontVertAlign = palcenter;
+    lblAd.clProSettings.FontHorzAlign = palcenter;
+    lblAd.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblAd.SetclProSettings(lblAd.clProSettings);
+    */
+    
+    
+    pnlCDBTKartMain = frmReceteDetay.AddNewProPanel(pnlCDBTKart,'pnlCDBTKartMain');
+    clComponent.SetupComponent(pnlCDBTKart,'{"Align" : "center","BackgroundColor":"#ffffff"}');
+    pnlCDBTKartMain.width = pnlCDBTKart.width*90/100;
+    pnlCDBTKartMain.Height = pnlCDBTKart.Height*28/100;
+    pnlCDBTKartMain.clProSettings.IsRound = True;
+  	pnlCDBTKartMain.clProSettings.RoundWidth = 5;
+  	pnlCDBTKartMain.clProSettings.RoundHeight = 5;
+    pnlCDBTKartMain.clProSettings.BorderWidth = 2;
+    pnlCDBTKartMain.clProSettings.BorderColor = clAlphaColor.clHexToColor('#212121');
+  	pnlCDBTKartMain.SetclProSettings(pnlCDBTKartMain.clProSettings);
+      
+      
+    
+    pnlCDBTKartLeft = frmReceteDetay.AddNewProPanel(pnlCDBTKartMain,'pnlCDBTKartLeft');
+    clComponent.SetupComponent(pnlCDBTKartLeft,'{"Align" : "left"}');
+    pnlCDBTKartLeft.width = pnlCDBTKart.width *34/100;
+    {
+      Recete_MIKTAR = frmReceteDetay.AddNewProLabel(pnlCDBTKartLeft, 'Recete_MIKTAR', 'Miktar');
+      Recete_MIKTAR.Align = altop;
+      Recete_MIKTAR.Height =pnlCDBTKartLeft.Height*230/1000;
+      Recete_MIKTAR.clProSettings.FontSize = 15;
+      Recete_MIKTAR.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+      Recete_MIKTAR.clProSettings.FontVertAlign = palcenter;
+      Recete_MIKTAR.clProSettings.FontHorzAlign = palcenter;
+      Recete_MIKTAR.SetclProSettings(Recete_MIKTAR.clProSettings);
+      
+      pnlCizgi=frmReceteDetay.AddNewProPanel(pnlCDBTKartLeft,'pnlCizgi4');
+      pnlCizgi.Align=alTop;
+      pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+      pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+      pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+      
+      
+      Recete_BASTARIH = frmReceteDetay.AddNewProLabel(pnlCDBTKartLeft, 'Recete_BASTARIH', 'Baslangiç tarih');
+      Recete_BASTARIH.Align = altop;
+      Recete_BASTARIH.Height =pnlCDBTKartLeft.Height*230/1000;
+      Recete_BASTARIH.SetclProSettings(Recete_MIKTAR.clProSettings);
+      
+      pnlCizgi=frmReceteDetay.AddNewProPanel(pnlCDBTKartLeft,'pnlCizgi5');
+      pnlCizgi.Align=alTop;
+      pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+      pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+      pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+      
+      
+      Recete_DEPO = frmReceteDetay.AddNewProLabel(pnlCDBTKartLeft, 'Recete_DEPO', 'Depo');
+      Recete_DEPO.Align = altop;
+      Recete_DEPO.Height =pnlCDBTKartLeft.Height*230/1000;
+      Recete_DEPO.SetclProSettings(Recete_MIKTAR.clProSettings);
+      
+      pnlCizgi=frmReceteDetay.AddNewProPanel(pnlCDBTKartLeft,'pnlCizgi7');
+      pnlCizgi.Align=alTop;
+      pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+      pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+      pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+      
+      
+      Recete_ACIKLAMA = frmReceteDetay.AddNewProLabel(pnlCDBTKartLeft, 'Recete_ACIKLAMA', 'Açiklama');
+      Recete_ACIKLAMA.Align = altop;
+      Recete_ACIKLAMA.Height = pnlCDBTKartLeft.Height*230/1000;
+      Recete_ACIKLAMA.SetclProSettings(Recete_MIKTAR.clProSettings);
+    }
+    
+    
+    pnlCizgi=frmReceteDetay.AddNewProPanel(pnlCDBTKartMain,'pnlCizgi000');
+    clComponent.SetupComponent(pnlCizgi,'{"Align" : "left","BackgroundColor":"#000000"}');
+    pnlCizgi.width=pnlCDBTKart.width*5/1000;
+    
+    pnlCDBTKartRight = frmReceteDetay.AddNewProPanel(pnlCDBTKartMain,'pnlCDBTKartRight');
+    clComponent.SetupComponent(pnlCDBTKartRight,'{"Align" : "left"}');
+    pnlCDBTKartRight.width = pnlCDBTKartMain.width *61/100;
+    {
+      
+      lblMiktar = frmReceteDetay.AddNewProLabel(pnlCDBTKartRight, 'lblMiktar', 'test1');
+      lblMiktar.Align = altop;
+      lblMiktar.Height =pnlCDBTKartRight.Height*230/1000;
+      lblMiktar.clProSettings.FontSize = 11;
+      lblMiktar.clProSettings.FontVertAlign = palcenter;
+      lblMiktar.clProSettings.FontHorzAlign = palcenter;
+      lblMiktar.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+      lblMiktar.SetclProSettings(lblMiktar.clProSettings);
+      
+      pnlCizgi=frmReceteDetay.AddNewProPanel(pnlCDBTKartRight,'pnlCizgi10');
+      pnlCizgi.Align=alTop;
+      pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+      pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+      pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+      
+      
+      lblBasTarih = frmReceteDetay.AddNewProLabel(pnlCDBTKartRight, 'lblBasTarih', 'test2');
+      lblBasTarih.Align = altop;
+      lblBasTarih.Height =pnlCDBTKartRight.Height*230/1000;
+      lblBasTarih.SetclProSettings(lblMiktar.clProSettings);
+      
+      pnlCizgi=frmReceteDetay.AddNewProPanel(pnlCDBTKartRight,'pnlCizgi11');
+      pnlCizgi.Align=alTop;
+      pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+      pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+      pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+      
+      
+      lblDepo = frmReceteDetay.AddNewProLabel(pnlCDBTKartRight, 'lblDepo', 'test3');
+      lblDepo.Align = altop;
+      lblDepo.Height =pnlCDBTKartRight.Height*230/1000;
+      lblDepo.SetclProSettings(lblMiktar.clProSettings);
+      
+      pnlCizgi=frmReceteDetay.AddNewProPanel(pnlCDBTKartRight,'pnlCizgi13');
+      pnlCizgi.Align=alTop;
+      pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+      pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+      pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+      
+      
+      lblAiklama = frmReceteDetay.AddNewProLabel(pnlCDBTKartRight, 'lblAiklama', 'test3');
+      lblAiklama.Align = altop;
+      lblAiklama.Height = pnlCDBTKartRight.Height*230/1000;
+      lblAiklama.SetclProSettings(lblMiktar.clProSettings);
+    }
+    
+    try
+      kartRest.BaseURL = Zcontents.getReceteSB  ;
+      kartRest.Accept = 'application/json';
+      kartRest.Method = rmPOST;
+      if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+        kartRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+        '"detayTur":"1"'+','+
+        '"stokKod":""'+
+        '}','application/json');
+      else
+        kartRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+        '"detayTur":"1"'+','+
+        '"stokKod":""'+
+        '}','application/json');
+      kartRest.Execute;
+      
+      kartJSONObject = Clomosy.ClDataSetFromJSON(kartRest.Response);
+      
+      if(kartJSONObject.Found)
+      {
+        kartStrJsonData = ''; // JSON verisini baslatiyoruz
+        Sbcounter = 0; // Sayaç baslatiyoruz
+       
+        while (not kartJSONObject.Eof)
+        {
+          // JSON ögesini ekliyoruz
+          if ( kartJSONObject.FieldByName('stoK_KODU').AsString == lstReceteRehber.clSelectedItemData(clText1) )
+          {
+            lblKod.text = kartJSONObject.FieldByName('stoK_KODU').AsString;
+            
+            //lblAd.text = kartJSONObject.FieldByName('Recete_ADI').AsString;
+            memoCAD.lines.add(kartJSONObject.FieldByName('stoK_ADI').AsString)
+            
+            lblAiklama.text = kartJSONObject.FieldByName('aciklama').AsString;
+            lblMiktar.text = kartJSONObject.FieldByName('miktar').AsString;
+            lblBasTarih.text = kartJSONObject.FieldByName('recetE_BAS_TAR').AsString;
+            lblDepo.text = kartJSONObject.FieldByName('urT_DEPO_ADI').AsString;
+            break;
+          }
+          kartJSONObject.Next; // Sonraki ögeye geç
+        }
+      }
+      else
+        ShowMessage('Recete kart bulunamadi');
+    except
+      ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0042: ' +LastExceptionMessage);
+    }
+    
+  }
+  frmReceteDetay.AddNewEvent(lblCDKart,tbeOnClick,'clickKart');
+  frmReceteDetay.AddNewEvent(imgCDKart,tbeOnClick,'clickKart');
+  
+  frmReceteDetay.AddNewEvent(lblCDHareket,tbeOnClick,'clickHareket');
+  frmReceteDetay.AddNewEvent(imgCDHareket,tbeOnClick,'clickHareket');
+  
+  frmReceteDetay.run;
+}
+
+
+void setRehber;
+{
+  try
+    sbRest.BaseURL = Zcontents.getReceteSB  ;
+    sbRest.Accept = 'application/json';
+    sbRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      sbRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+        '"detayTur":"1"'+','+
+        '"stokKod":""'+
+        '}','application/json');
+    else
+      sbRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+        '"detayTur":"1"'+','+
+        '"stokKod":""'+
+        '}','application/json');
+    sbRest.Execute;
+    
+    sbJSONDetailObject = Clomosy.ClDataSetFromJSON(sbRest.Response);
+    
+    if(sbJSONDetailObject.Found)
+    {
+      sbStrJsonData = ''; // JSON verisini baslatiyoruz
+      Sbcounter = 0; // Sayaç baslatiyoruz
+     
+      while (not sbJSONDetailObject.Eof)
+      {
+        // JSON ögesini ekliyoruz
+        if (Sbcounter > 0) 
+          sbStrJsonData = sbStrJsonData + ',';
+          
+          sbStrJsonData = sbStrJsonData + 
+          '{
+            "rehberKod": "'  + sbJSONDetailObject.FieldByName('stoK_KODU').AsString+'",'+
+            '"rehberAd": "'   + sbJSONDetailObject.FieldByName('stoK_ADI').AsString + '",' +
+            '"rehberAciklama": "'  + sbJSONDetailObject.FieldByName('aciklama').AsString+'",'+
+            '"rehberDepo": "'    + sbJSONDetailObject.FieldByName('urT_DEPO_ADI').AsString + '"'+
+            '}';
+        sbJSONDetailObject.Next; // Sonraki ögeye geç
+        
+        Sbcounter = Sbcounter + 1; // Sayaç artiriyoruz
+      }
+      // JSON dizisinin kapanisi
+      sbStrJsonData = '[' + sbStrJsonData + ']';
+     
+      // PPListView'i JSON verisi ile dolduruyoruz
+      
+      btnGetir.Visible  = false;
+      searchEdtRehber.Visible = True;
+      searchEdtRehber.Width = pnlReceteGiris.Width*80/100;
+      searchEdtRehber.Margins.Left=0;
+      lstReceteRehber.clLoadProListViewDataFromDataset(Clomosy.ClDataSetFromJSON(sbStrJsonData));
+    }
+    else
+      ShowMessage('Recete SABIT bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0043: ' +LastExceptionMessage);
+  }
+  FrmGiris.AddNewEvent(lstReceteRehber,tbeOnItemClick,'setPanels');
+}
+
+void zamanlayiciTetikle;
+{
+ clDoClick(btnGetir);
+ zamanlayici.Enabled = False;
+}
+
+void deneme;
+{
+  ShowMessage('dememe');
+}
+
+
+{
+  FrmGiris=TCLForm.Create(Self);
+  //ShowMessage(ZmainMenu.deneme);
+  sbRest=TCLRest.Create;
+  Zcontents.setApis;
+  
+  zamanlayici= FrmGiris.AddNewTimer(FrmGiris,'zamanlayici',1000);
+  zamanlayici.Enabled = True;
+  FrmGiris.AddNewEvent(zamanlayici,tbeOnTimer,'zamanlayiciTetikle');
+  
+  pnlReceteGiris  =  FrmGiris.AddNewProPanel(FrmGiris,'pnlReceteGiris');
+  clComponent.SetupComponent(pnlReceteGiris,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+  {
+    lstReceteRehber = FrmGiris.AddNewProListView(pnlReceteGiris,'lstReceteRehber');
+    lstReceteRehber.Align = alcenter;
+    lstReceteRehber.Height =  pnlReceteGiris.Height*85/100;
+    lstReceteRehber.Width =   pnlReceteGiris.Width *95/100;
+    lstReceteRehber.Margins.Bottom = pnlReceteGiris.Height*3/100;
+    lstReceteRehber.Margins.Top = pnlReceteGiris.Height*15/100;
+    lstReceteRehber.clProSettings.ViewType = lvWaterFall; //(lvList, lvIcon, lvWaterFall)
+    lstReceteRehber.clProSettings.ColCount = 1;
+    lstReceteRehber.clProSettings.ItemHeight = lstReceteRehber.Height*18/100;  //designer panel büyüklügü
+    lstReceteRehber.clProSettings.ItemSpace = lstReceteRehber.Height*2/100;
+    lstReceteRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFCFF');
+    lstReceteRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    lstReceteRehber.clProSettings.BorderWidth = 2;
+    lstReceteRehber.clProSettings.RoundHeight = 5;
+    lstReceteRehber.clProSettings.RoundWidth = 5;
+    lstReceteRehber.SetclProSettings(lstReceteRehber.clProSettings);
+    
+    btnGetir  = FrmGiris.AddNewpROButton(pnlReceteGiris,'btnGetir', 'KARTLAR BEKLENIYOR');
+    btnGetir.Align = alcenter;
+    btnGetir.Margins.Bottom = pnlReceteGiris.Height*85/100;
+    btnGetir.Height = pnlReceteGiris.Height*8/100;
+    btnGetir.Width = pnlReceteGiris.Width*45/100;
+    btnGetir.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+    btnGetir.clProSettings.RoundHeight = 10;
+    btnGetir.clProSettings.RoundWidth = 10;
+    btnGetir.clProSettings.BorderWidth = 1;
+    btnGetir.clProSettings.TextSettings.Font.Style = [fsBold];
+    btnGetir.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    btnGetir.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    btnGetir.SetclProSettings(btnGetir.clProSettings);
+    btnGetir.Visible = True;
+    
+    
+    searchEdtRehber = FrmGiris.AddNewProSearchEdit(pnlReceteGiris,'searchEdtRehber','ARAMA YAPINIZ');
+    searchEdtRehber.Align = alcenter;
+    searchEdtRehber.Margins.Bottom = pnlReceteGiris.Height*85/100;
+    searchEdtRehber.Margins.left = pnlReceteGiris.Width*30/100;
+    searchEdtRehber.Height = pnlReceteGiris.Height*8/100;
+    searchEdtRehber.Width = pnlReceteGiris.Width*5/100;
+    searchEdtRehber.TargetListView = lstReceteRehber;
+    searchEdtRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    searchEdtRehber.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    searchEdtRehber.clProSettings.IsRound = True;
+    searchEdtRehber.clProSettings.RoundHeight = 3;
+    searchEdtRehber.clProSettings.RoundWidth = 3;
+    searchEdtRehber.clProSettings.BorderWidth = 1;
+    searchEdtRehber.SetclProSettings(searchEdtRehber.clProSettings);
+    searchEdtRehber.Visible = False;
+    
+    DesignerPanelRehber        = FrmGiris.AddNewProListViewDesignerPanel(lstReceteRehber, 'DesignerPanelRehber');
+    DesignerPanelRehber.Align  = alMostTop;
+    DesignerPanelRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#b3fce5');
+    DesignerPanelRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+    DesignerPanelRehber.clProSettings.BorderWidth = 2;
+    DesignerPanelRehber.clProSettings.RoundHeight = 20;
+    DesignerPanelRehber.clProSettings.RoundWidth = 20;
+    DesignerPanelRehber.SetclProSettings(DesignerPanelRehber.clProSettings);
+    
+    lstReceteRehber.SetDesignerPanel(DesignerPanelRehber);
+    
+    
+    rehberAd = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberAd', 'stok ad');
+    rehberAd.Align = altop;
+    rehberAd.Height =lstReceteRehber.Height*4/100;
+    rehberAd.Margins.Top = lstReceteRehber.Height*2/100;
+    rehberAd.Margins.Right = 10;
+    rehberAd.Margins.Left = 10;
+    rehberAd.clProSettings.FontSize = 16;
+    rehberAd.SetclProSettings(rehberAd.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberAd, clText);
+    
+    rehberKod = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberKod', 'stok kod');
+    rehberKod.Align = altop;
+    rehberKod.Height =lstReceteRehber.Height*4/100;
+    rehberKod.Margins.Right = 10;
+    rehberKod.Margins.Left = 10;
+    rehberKod.clProSettings.FontSize = 14;
+    rehberKod.SetclProSettings(rehberKod.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberKod, clText1);
+    
+    rehberAciklama = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberAciklama', 'Recete Açiklama');
+    rehberAciklama.Align = altop;
+    rehberAciklama.Height =lstReceteRehber.Height*4/100;
+    rehberAciklama.Margins.Right = 10;
+    rehberAciklama.Margins.Left = 10;
+    rehberAciklama.clProSettings.FontSize = 12;
+    rehberAciklama.SetclProSettings(rehberAciklama.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberAciklama, clText2);
+  
+    rehberDepo = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberDepo', 'test1');
+    rehberDepo.Align = altop;
+    rehberDepo.Height =lstReceteRehber.Height*4/100;
+    rehberDepo.Margins.Right = 10;
+    rehberDepo.Margins.Left = 10;
+    rehberDepo.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    rehberDepo.clProSettings.FontSize = 12;
+    DesignerPanelRehber.AddPanelObject(rehberDepo, clText3);
+  }
+  
+  
+  FrmGiris.AddNewEvent(btnGetir,tbeOnClick,'setRehber');
+  
+  FrmGiris.run;
+}

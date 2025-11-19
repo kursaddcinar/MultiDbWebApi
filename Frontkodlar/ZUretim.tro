@@ -1,0 +1,1043 @@
+uses Zcontents;
+var 
+  frmUretimDetay : TCLForm;
+  pnlSDMain,pnlSDTop,pnlSDKart  : TclProPanel;
+  pnlSDBottom,pnlSDBTKart,pnlSDBTKartMain: TclProPanel;
+  lblAd,lblKod,
+  lblKalan,
+  lblSpBelgeEvrakNo,lblIEBelgeEvrakNo,lblIeProjeBilgisi,lblIeMiktari,lblUretilen,lblAciklama,lblIeOprBilgisi,
+  l1blSpBelgeEvrakNo,l1blIeBelgeEvrakNo,l1blIeProjeBilgisi,l1blIeMiktari,l1blUretilen,l1blKalan,l1blAciklama,l1blIeOprBilgisi: TClProLabel;
+  JSONObject: TCLJSONQuery;
+  memoSAD : TCLMemo;
+  lblKabul,lbl2Red,lblZaman : TClProLabel;
+  edtKabul,edtRed,edtZaman : TclProEdit;
+  btnKayit,btnSil : TClProButton;
+  
+  
+  btnGetir  : TClProButton;
+  
+  sbStrJsonData: string;  // JSON verisini tutacagiz
+  Sbcounter: Integer;
+  sbJSONDetailObject: TCLJSONQuery;
+  
+  lstUretimRehber : TClProListView;
+
+  zamanlayici: TClTimer;
+
+
+  FrmGiris : TCLForm;
+  pnlUretimGiris  : TclProPanel;
+  searchEdtRehber : TClProSearchEdit;
+  rehberAd,rehberNo,rehberISEmriProjeKod,rehberTarih,rehberOprAd_Adet,rehebrOprMakKulRecId,rehberOprRecId,rehberOprReceteId  : TClProLabel;
+  DesignerPanelRehber : TClProListViewDesignerPanel;
+  sbRest,hrRest,kabulRest  : TCLRest;
+  countLbl,heightLbl : Integer;
+  
+  pnlSDBTKartLeft,pnlSDBTKartRight,pnlCizgi,pnlMemoCAd  : TclProPanel;
+  labelLengh,cizgiLengh : Real;
+  denemeInt:Integer;
+  
+  
+  
+  strDBNAME:String;
+  strISEMRI_BELGE_NO:String;
+  intDEPO_KODU:Integer;
+  intISLEM_TIPI:Integer;
+  intOPR_KODU_RECID:Integer;
+  intMAK_KODU_RECID:Integer;
+  
+  fltISLEM_DK:float;
+  fltISLEM_MIK:float;
+  fltKABUL_MIK:float;
+  fltRED_MIK:float;
+  
+  intRECETEHR_RECID:Integer;
+  
+void deneme;
+{
+  ShowMessage('dememe');
+}
+
+void setAgainRehber;
+{
+  try
+    try
+      sbRest.BaseURL = Zcontents.getUretim  ;
+      sbRest.Accept = 'application/json';
+      sbRest.Method = rmPOST;
+      if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+        sbRest.AddBody('{
+          "dataBase":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+          '"kulNo":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1)+'"'+
+          '}','application/json');
+      else
+        sbRest.AddBody('{
+          "dataBase":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+          '"kulNo":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1)+'"'+
+          '}','application/json');
+      sbRest.Execute;
+    except
+      ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message004922: ' +LastExceptionMessage);
+    }
+    
+    sbJSONDetailObject = Clomosy.ClDataSetFromJSON(sbRest.Response);
+    
+    if(sbJSONDetailObject.Found)
+    {
+      sbStrJsonData = ''; // JSON verisini baslatiyoruz
+      Sbcounter = 0; // Sayaç baslatiyoruz
+     
+      while (not sbJSONDetailObject.Eof)
+      {
+        // JSON ögesini ekliyoruz
+        if (Sbcounter > 0)
+        {
+          sbStrJsonData = sbStrJsonData + ',';
+        }
+          
+          sbStrJsonData = sbStrJsonData + 
+          '{
+            "rehberNo": "'  + sbJSONDetailObject.FieldByName('isemrI_BELGE_NO').AsString+'",'+
+            '"rehberAd": "'   + sbJSONDetailObject.FieldByName('isemrI_STOK_ADI').AsString + '",' +
+            '"rehberTarih": "'    + sbJSONDetailObject.FieldByName('isemrI_TARIH').AsString + '",'+
+            '"rehberISEmriProjeKod": "'  + sbJSONDetailObject.FieldByName('iE_PROJE_KODU').AsString+'",'+
+            '"rehberOprAd_Adet": "'  + sbJSONDetailObject.FieldByName('operasyoN_ADI').AsString+'   '+sbJSONDetailObject.FieldByName('uretilebiliR_MIKTAR').AsString+'",'+
+            '"rehebrOprMakKulRecId": "'  + sbJSONDetailObject.FieldByName('oprmakkuL_RECID').AsString+'",'+
+            '"rehberOprRecId": "'  + sbJSONDetailObject.FieldByName('operasyoN_RECID').AsString+'",'+
+            '"rehberOprReceteId": "'  + sbJSONDetailObject.FieldByName('recetehR_RECNO').AsString+'"'+
+            '}';
+        sbJSONDetailObject.Next; // Sonraki ögeye geç
+        
+        Sbcounter = Sbcounter + 1; // Sayaç artiriyoruz
+      }
+      // JSON dizisinin kapanisi
+      sbStrJsonData = '[' + sbStrJsonData + ']';
+     
+      // PPListView'i JSON verisi ile dolduruyoruz
+      
+      btnGetir.Visible  = false;
+      searchEdtRehber.Visible = True;
+      searchEdtRehber.Width = FrmGiris.clWidth*80/100;
+      searchEdtRehber.Margins.Left=0;
+      
+      lstUretimRehber.clearList;
+      lstUretimRehber.clLoadProListViewDataFromDataset(Clomosy.ClDataSetFromJSON(sbStrJsonData));
+      FrmGiris.AddNewEvent(lstUretimRehber,tbeOnItemClick,'setPanels');
+    }
+    else
+    {
+      clDoClick(FrmGiris.BtnGoBack);
+      ShowMessage('operasyon bulunamadi');
+    }
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0041: ' +LastExceptionMessage);
+  }
+}
+
+
+
+void zeroCheck;
+{
+  if(edtKabul.text=='')
+    edtKabul.text='0';
+  if(edtRed.text=='')
+    edtRed.text='0';
+  if(edtZaman.text=='')
+    edtZaman.text='0';
+  
+  intISLEM_TIPI = 0;
+  fltISLEM_MIK  = 0;
+  fltRED_MIK    = 0;
+  fltISLEM_DK   = 0;
+}
+
+void hideZero1;
+{
+  edtKabul.text =  '';
+}
+
+void hideZero2;
+{
+  edtRed.text =  '';
+}
+
+void hideZero3;
+{
+  edtZaman.text =  '';
+}
+
+void showZero1;
+{
+  if(edtKabul.text == '')
+    edtKabul.text =  '0';
+}
+
+void showZero2;
+{
+  if(edtRed.text == '')
+    edtRed.text =  '0';
+}
+
+void showZero3;
+{
+  if(edtZaman.text == '')
+    edtZaman.text =  '0';
+}
+
+void uretimKabul;
+var
+  kartJSONObject: TCLJSONQuery;
+  temp : String;
+  
+  reloadJSONObject: TCLJSONQuery;
+  kartStrJsonData : String;
+  
+  controlKabul : Integer;
+{
+  /////////islem tipi VE miktari\\\\\\\\\\
+  zeroCheck;
+  controlKabul = 0;
+  
+  if( (edtKabul.text==0) &&  (edtRed.text==0) &&  (edtZaman.text==0 ) )
+  {
+    ShowMessage('BÜTÜN DEGERLER BOS!');
+  }
+  else if( (edtZaman.text==0 )     ) 
+  {
+    ShowMessage('ZAMAN GIRINIZ!');
+  }
+  
+  else if( (edtKabul.text==0)  &&  (edtRed.text==0)     ) 
+  {
+    ShowMessage('RED VE KABUL AYNI ANDA "0" OLAMAZ!');
+  }
+  
+  else if(  (edtKabul.text>0) &&  (edtRed.text>0)  )     //
+  {
+    ShowMessage('RED ve KABUL degerlerinden yalnizca birisi dolu olmalidir.');
+  }
+  
+  else////  EDITTEXT KONTROLLERI SAGLANDIKTAN SONRA GÖNDERIME HAZIR
+  {
+    fltISLEM_DK         = edtZaman.text;///!gelen int ama dönüsüm problemi var mi kontrol et
+    fltKABUL_MIK        = edtKabul.text;
+    fltRED_MIK = edtRed.text;
+    
+    if(edtKabul.text>0)//   ISLEM TIPI BELIRLEME
+    { 
+      intISLEM_TIPI=0;
+      fltISLEM_MIK=edtKabul.text;
+    }
+    else if(edtRed.text>0)
+    {
+      intISLEM_TIPI=1;
+      fltISLEM_MIK=edtRed.text;
+    }
+    else
+    {
+      ShowMessage('islem tipi tanimlanamadi');
+    }
+    
+      kartJSONObject = Clomosy.ClDataSetFromJSON(sbRest.Response);
+      
+      if(kartJSONObject.Found)
+      {
+        while (not kartJSONObject.Eof)
+        {
+          // JSON ögesini ekliyoruz
+          if (  (kartJSONObject.FieldByName('isemrI_BELGE_NO').AsString   == lstUretimRehber.clSelectedItemData(clText1)) &&
+                (kartJSONObject.FieldByName('oprmakkuL_RECID').AsString   == lstUretimRehber.clSelectedItemData(clText))  &&
+                (kartJSONObject.FieldByName('recetehR_RECNO').AsString == lstUretimRehber.clSelectedItemData(clText6)) &&
+                (kartJSONObject.FieldByName('operasyoN_RECID').AsString   == lstUretimRehber.clSelectedItemData(clText5)) 
+            )
+          {
+            
+            strISEMRI_BELGE_NO  = kartJSONObject.FieldByName('isemrI_BELGE_NO').AsString;
+            intDEPO_KODU        = StrToInt(kartJSONObject.FieldByName('depO_KODU').AsString);///!gelen int ama dönüsüm problemi var mi kontrol et
+            //intISLEM_TIPI     //islem tipi tanimlandi
+            intOPR_KODU_RECID   = lstUretimRehber.clSelectedItemData(clText5);
+            intMAK_KODU_RECID   = StrToInt(kartJSONObject.FieldByName('makinE_RECID').AsString);//tür dönüsümlerini vsdden kontrol et
+            
+            //fltISLEM_MIK //islem miktari tanimlandi
+            intRECETEHR_RECID   = lstUretimRehber.clSelectedItemData(clText6); 
+            
+            if( StrToFloat(kartJSONObject.FieldByName('uretilebiliR_MIKTAR').AsString) < (fltISLEM_MIK) )
+            {
+              ShowMessage('girilen miktar üretilen miktardan fazla olamaz.');
+              break;
+            }
+            
+            else
+            {
+              controlKabul = 1;
+              try
+                kabulRest=TCLRest.Create;
+                kabulRest.BaseURL = Zcontents.setUretim ;
+                kabulRest.Accept = 'application/json';
+                kabulRest.Method = rmPOST;
+                if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+                {
+                  kabulRest.AddBody('{
+                    "dbname":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+                    '"isemrI_BELGE_NO":'+'"'+strISEMRI_BELGE_NO+'",'+
+                    '"kullanicI_NO":'+(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1))+','+//(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1))
+                    '"depO_KODU":'+IntToStr(intDEPO_KODU)+','+
+                    '"isleM_DK":'+FloatToStr(fltISLEM_DK)+','+
+                    '"isleM_TIPI":'+IntToStr(intISLEM_TIPI)+','+
+                    '"opR_KODU_RECID":'+IntToStr(intOPR_KODU_RECID)+','+
+                    '"maK_KODU_RECID":'+IntToStr(intMAK_KODU_RECID)+','+
+                    '"isleM_MIK":'+clGetStringReplace(  FloatToStr(fltISLEM_MIK),',','.' )+','+
+                    '"kabuL_MIK":'+clGetStringReplace(  FloatToStr(fltKABUL_MIK),',','.' )+','+//clGetStringReplace(  FloatToStr(fltKABUL_MIK),',','.' )
+                    '"reD_MIK":'+clGetStringReplace(  FloatToStr(fltRED_MIK),',','.' )+','+
+                    '"RECETEHR_RECID":'+IntToStr(intRECETEHR_RECID)+
+                    '}','application/json');
+                }
+                else
+                {
+                  kabulRest.AddBody('{
+                    "dbname":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+                    '"isemrI_BELGE_NO":'+'"'+strISEMRI_BELGE_NO+'",'+
+                    '"kullanicI_NO":'+(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1))+','+//(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1))
+                    '"depO_KODU":'+IntToStr(intDEPO_KODU)+','+
+                    '"isleM_DK":'+FloatToStr(fltISLEM_DK)+','+
+                    '"isleM_TIPI":'+IntToStr(intISLEM_TIPI)+','+
+                    '"opR_KODU_RECID":'+IntToStr(intOPR_KODU_RECID)+','+
+                    '"maK_KODU_RECID":'+IntToStr(intMAK_KODU_RECID)+','+
+                    '"isleM_MIK":'+clGetStringReplace(  FloatToStr(fltISLEM_MIK),',','.' )+','+
+                    '"kabuL_MIK":'+clGetStringReplace(  FloatToStr(fltKABUL_MIK),',','.' )+','+//clGetStringReplace(  FloatToStr(fltKABUL_MIK),',','.' )
+                    '"reD_MIK":'+clGetStringReplace(  FloatToStr(fltRED_MIK),',','.' )+','+
+                    '"RECETEHR_RECID":'+IntToStr(intRECETEHR_RECID)+
+                    '}','application/json');
+                }
+                kabulRest.Execute;
+              except
+                ShowMessage('kayit basarili');
+                break;
+              }
+            }
+          }
+          kartJSONObject.Next; // Sonraki ögeye geç
+        }
+      }
+      else
+        ShowMessage('is emri kart bulunamadi');
+  }
+  if (controlKabul == 1)
+  {
+    //ShowMessage('kayit basarili');
+    clDoClick(frmUretimDetay.BtnGoBack);
+                //frmUretimDetay.Close;
+    setAgainRehber;
+  }
+}
+
+  
+
+void setPanels;
+var
+  kartRest  : TCLRest;
+  kartJSONObject: TCLJSONQuery;
+  kartStrJsonData : String;
+{
+  //ShowMessage(lstUretimRehber.clSelectedItemData(clText1));
+  frmUretimDetay  = TCLForm.Create(Self);
+  kartRest  = TCLRest.Create;
+  
+  pnlSDMain = frmUretimDetay.AddNewProPanel(frmUretimDetay,'pnlSDMain');
+  clComponent.SetupComponent(pnlSDMain,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+  
+  
+  //alt panel
+  pnlSDBottom = frmUretimDetay.AddNewProPanel(pnlSDMain,'pnlSDBottom');
+  clComponent.SetupComponent(pnlSDBottom,'{"Align" : "top","BackgroundColor":"#ffffff"}');
+  pnlSDBottom.height = pnlSDMain.height *95/100;
+  
+  {
+    //UretimKart panel
+    pnlSDBTKart = frmUretimDetay.AddNewProPanel(pnlSDBottom,'pnlSDBTKart');
+    clComponent.SetupComponent(pnlSDBTKart,'{"Align" : "bottom","BackgroundColor":"#b3c9ff"}');
+    pnlSDBTKart.height = pnlSDBottom.height *95/100;
+    pnlSDBTKart.visible = true;
+  
+  
+  
+  lblKod = frmUretimDetay.AddNewProLabel(pnlSDBTKart, 'lblKod', 'Uretim kod');
+  lblKod.Align = altop;
+  lblKod.Height =pnlSDBTKart.Height*4/100;
+  lblKod.clProSettings.FontSize = 15;
+  lblKod.clProSettings.FontVertAlign = palcenter;
+  lblKod.clProSettings.FontHorzAlign = palcenter;
+  lblKod.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lblKod.margins.top  = pnlSDBTKart.Height*4/100;
+  lblKod.SetclProSettings(lblKod.clProSettings);
+  
+  
+  
+  pnlMemoCAd = frmUretimDetay.AddNewProPanel(pnlSDBTKart,'pnlMemoCAd');
+  clComponent.SetupComponent(pnlMemoCAd,'{"Align" : "top"}');
+  pnlMemoCAd.Height = pnlSDBTKart.Height*12/100;
+  
+  memoSAD = frmUretimDetay.AddNewMemo(pnlMemoCAd,'memoSAD','');
+  memoSAD.Align = alcenter;
+  memoSAD.width = pnlMemoCAd.width*90/100;
+  memoSAD.Height = pnlMemoCAd.Height*100/100;
+  memoSAD.ReadOnly = True;
+  memoSAD.TextSettings.WordWrap = True;
+  memoSAD.StyledSettings = ssFamily;
+  memoSAD.TextSettings.Font.Size = 19;
+  
+  countLbl  = 8;//11
+  heightLbl = (((100-((countLbl-1)*2)))/countLbl);
+  
+  pnlSDBTKartMain = frmUretimDetay.AddNewProPanel(pnlSDBTKart,'pnlSDBTKartMain');
+  clComponent.SetupComponent(pnlSDBTKart,'{"Align" : "center","BackgroundColor":"#ffffff"}');
+  pnlSDBTKartMain.width = pnlSDBTKart.width*90/100;
+  pnlSDBTKartMain.Height = pnlSDBTKart.Height*countLbl*35/1000;
+  pnlSDBTKartMain.margins.bottom  = pnlSDBTKart.Height*50/100;
+  pnlSDBTKartMain.clProSettings.IsRound = True;
+	pnlSDBTKartMain.clProSettings.RoundWidth = 5;
+	pnlSDBTKartMain.clProSettings.RoundHeight = 5;
+  pnlSDBTKartMain.clProSettings.BorderWidth = 2;
+  pnlSDBTKartMain.clProSettings.BorderColor = clAlphaColor.clHexToColor('#212121');
+	pnlSDBTKartMain.SetclProSettings(pnlSDBTKartMain.clProSettings);
+  
+  
+  
+  
+  pnlSDBTKartLeft = frmUretimDetay.AddNewProPanel(pnlSDBTKartMain,'pnlSDBTKartLeft');
+  clComponent.SetupComponent(pnlSDBTKartLeft,'{"Align" : "left"}');
+  pnlSDBTKartLeft.width = pnlSDBTKart.width *34/100;
+  
+  
+  labelLengh=pnlSDBTKartLeft.Height*heightLbl*8/10/100;
+  cizgiLengh=pnlSDBTKart.Height*2/1000;
+  {
+    lblSpBelgeEvrakNo = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblSpBelgeEvrakNo', 'SP Belge-Evrak NO');
+    lblSpBelgeEvrakNo.Align = altop;
+    lblSpBelgeEvrakNo.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    lblSpBelgeEvrakNo.clProSettings.FontSize = 14;
+    lblSpBelgeEvrakNo.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblSpBelgeEvrakNo.clProSettings.FontVertAlign = palcenter;
+    lblSpBelgeEvrakNo.clProSettings.FontHorzAlign = palcenter;
+    lblSpBelgeEvrakNo.SetclProSettings(lblSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi4');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblIEBelgeEvrakNo = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblIEBelgeEvrakNo', 'IE Belge-Evrak NO');
+    lblIEBelgeEvrakNo.Align = altop;
+    lblIEBelgeEvrakNo.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    lblIEBelgeEvrakNo.SetclProSettings(lblSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi5');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblIeProjeBilgisi = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblIeProjeBilgisi', 'IE Proje Bilgisi');
+    lblIeProjeBilgisi.Align = altop;
+    lblIeProjeBilgisi.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    lblIeProjeBilgisi.SetclProSettings(lblSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi6');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    lblIeMiktari = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblIeMiktari', 'IE Miktari');
+    lblIeMiktari.Align = altop;
+    lblIeMiktari.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    lblIeMiktari.SetclProSettings(lblSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi7');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblUretilen = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblUretilen', 'Üretilen');
+    lblUretilen.Align = altop;
+    lblUretilen.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    lblUretilen.SetclProSettings(lblSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi71');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblKalan = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblKalan', 'Kalan');
+    lblKalan.Align = altop;
+    lblKalan.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    lblKalan.SetclProSettings(lblSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi761');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblAciklama = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblAciklama', 'Açiklama');
+    lblAciklama.Align = altop;
+    lblAciklama.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    lblAciklama.SetclProSettings(lblSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi72');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblIeOprBilgisi = frmUretimDetay.AddNewProLabel(pnlSDBTKartLeft, 'lblIeOprBilgisi', 'S.Belge IE Opr. Bilgisi');
+    lblIeOprBilgisi.Align = altop;
+    lblIeOprBilgisi.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    lblIeOprBilgisi.clProSettings.FontSize = 12;
+    lblIeOprBilgisi.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblIeOprBilgisi.clProSettings.FontVertAlign = palcenter;
+    lblIeOprBilgisi.clProSettings.FontHorzAlign = palcenter;
+    lblIeOprBilgisi.SetclProSettings(lblIeOprBilgisi.clProSettings);
+  }
+  
+  
+  pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartMain,'pnlCizgi000');
+  clComponent.SetupComponent(pnlCizgi,'{"Align" : "left","BackgroundColor":"#000000"}');
+  pnlCizgi.width=pnlSDBTKart.width*5/1000;
+  
+  pnlSDBTKartRight = frmUretimDetay.AddNewProPanel(pnlSDBTKartMain,'pnlSDBTKartRight');
+  clComponent.SetupComponent(pnlSDBTKartRight,'{"Align" : "left"}');
+  pnlSDBTKartRight.width = pnlSDBTKartMain.width *61/100;
+  {
+    l1blSpBelgeEvrakNo = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blSpBelgeEvrakNo', 'SP Belge-Evrak NO');
+    l1blSpBelgeEvrakNo.Align = altop;
+    l1blSpBelgeEvrakNo.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    l1blSpBelgeEvrakNo.clProSettings.FontSize = 12;
+    l1blSpBelgeEvrakNo.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    l1blSpBelgeEvrakNo.clProSettings.FontVertAlign = palcenter;
+    l1blSpBelgeEvrakNo.clProSettings.FontHorzAlign = palcenter;
+    l1blSpBelgeEvrakNo.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi41');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    l1blIeBelgeEvrakNo = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blIeBelgeEvrakNo', 'IE Belge-Evrak NO');
+    l1blIeBelgeEvrakNo.Align = altop;
+    l1blIeBelgeEvrakNo.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    l1blIeBelgeEvrakNo.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi51');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    l1blIeProjeBilgisi = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blIeProjeBilgisi', 'IE Proje Bilgisi');
+    l1blIeProjeBilgisi.Align = altop;
+    l1blIeProjeBilgisi.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    l1blIeProjeBilgisi.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi61');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    l1blIeMiktari = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blIeMiktari', 'IE Miktari');
+    l1blIeMiktari.Align = altop;
+    l1blIeMiktari.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    l1blIeMiktari.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi71111');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    l1blUretilen = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blUretilen', 'Üretilen');
+    l1blUretilen.Align = altop;
+    l1blUretilen.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    l1blUretilen.clProSettings.FontColor = clAlphaColor.clHexToColor('#e13d3d');
+    l1blUretilen.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi711');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    l1blKalan = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blKalan', 'Kalan');
+    l1blKalan.Align = altop;
+    l1blKalan.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    l1blKalan.clProSettings.FontColor = clAlphaColor.clHexToColor('#2acf6a');
+    l1blKalan.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi7611');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    l1blAciklama = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blAciklama', 'Açiklama');
+    l1blAciklama.Align = altop;
+    l1blAciklama.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    l1blAciklama.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+    
+    pnlCizgi=frmUretimDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi721');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    l1blIeOprBilgisi = frmUretimDetay.AddNewProLabel(pnlSDBTKartRight, 'l1blIeOprBilgisi', 'S.Belge IE Opr. Bilgisi');
+    l1blIeOprBilgisi.Align = altop;
+    l1blIeOprBilgisi.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    l1blIeOprBilgisi.SetclProSettings(l1blSpBelgeEvrakNo.clProSettings);
+  }
+   
+  try
+    kartJSONObject = Clomosy.ClDataSetFromJSON(sbRest.Response);
+    
+    if(kartJSONObject.Found)
+    {
+      while (not kartJSONObject.Eof)
+      {
+        // JSON ögesini ekliyoruz
+        if (  (kartJSONObject.FieldByName('isemrI_BELGE_NO').AsString   == lstUretimRehber.clSelectedItemData(clText1)) &&
+              (kartJSONObject.FieldByName('oprmakkuL_RECID').AsString   == lstUretimRehber.clSelectedItemData(clText))  &&
+              (kartJSONObject.FieldByName('recetehR_RECNO').AsString == lstUretimRehber.clSelectedItemData(clText6)) &&
+              (kartJSONObject.FieldByName('operasyoN_RECID').AsString   == lstUretimRehber.clSelectedItemData(clText5)) 
+            )
+        {
+          
+          lblKod.text = kartJSONObject.FieldByName('isemrI_STOK_KODU').AsString;
+          
+          memoSAD.lines.add(kartJSONObject.FieldByName('isemrI_STOK_ADI').AsString)
+          
+          l1blSpBelgeEvrakNo.text = kartJSONObject.FieldByName('sipariS_BELGE_NO').AsString+' - '+kartJSONObject.FieldByName('sipariS_EVRAK_NO').AsString;
+          l1blIeBelgeEvrakNo.text = kartJSONObject.FieldByName('isemrI_BELGE_NO').AsString+' - '+kartJSONObject.FieldByName('evraK_NO').AsString;
+          l1blIeProjeBilgisi.text = kartJSONObject.FieldByName('iE_PROJE_ADI').AsString;
+          l1blIeMiktari.text = kartJSONObject.FieldByName('isemrI_MIKTAR').AsString;
+          l1blUretilen.text = kartJSONObject.FieldByName('uretileN_MIKTAR').AsString;
+          l1blKalan.text = kartJSONObject.FieldByName('uretilebiliR_MIKTAR').AsString;
+          l1blAciklama.text = kartJSONObject.FieldByName('aciklama').AsString;
+          l1blIeOprBilgisi.text = kartJSONObject.FieldByName('operasyoN_KODU').AsString+' - '+kartJSONObject.FieldByName('operasyoN_ADI').AsString;
+          break;
+        }
+        kartJSONObject.Next; // Sonraki ögeye geç
+      }
+    }
+    else
+      ShowMessage('operasyon kart bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0071: ' +LastExceptionMessage);
+  }
+  
+  {
+    lblKabul = frmUretimDetay.AddNewProLabel(pnlSDBTKart, 'lblKabul', 'kabul');
+    lblKabul.Align = alcenter;
+    lblKabul.Height=pnlSDBTKart.Height*4/100;
+    lblKabul.Width=pnlSDBTKartMain.Width*40/100;
+    lblKabul.margins.bottom  = pnlSDBTKart.Height*15/100;
+    lblKabul.margins.right  = pnlSDBTKart.Width*45/100;
+    lblKabul.clProSettings.FontSize = 11;
+    lblKabul.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblKabul.clProSettings.FontVertAlign = palcenter;
+    lblKabul.clProSettings.FontHorzAlign = palcenter;
+    lblKabul.SetclProSettings(lblKabul.clProSettings);
+    
+    edtKabul=frmUretimDetay.AddNewProEdit(pnlSDBTKart,'edtKabul', 'Kabul Miktari giriniz');
+    edtKabul.Align=alcenter;
+    edtKabul.clTypeOfField = taFloat; 
+    edtKabul.Height=pnlSDBTKart.Height*10/100;
+    edtKabul.Width=pnlSDBTKartMain.Width*40/100;
+    edtKabul.margins.bottom  = pnlSDBTKart.Height*2/100;
+    //edtKabul.margins.top  = pnlSDBTKart.Height*5/100;
+    edtKabul.margins.right  = pnlSDBTKart.Width*44/100;
+    edtKabul.clProSettings.BorderWidth=1;
+    edtKabul.clProSettings.BorderColor = clAlphaColor.clHexToColor('#2acf6a');
+    edtKabul.clProSettings.FontColor = clAlphaColor.clHexToColor('#2acf6a');
+    edtKabul.clProSettings.FontSize = 24;
+    edtKabul.clProSettings.Istransparent = False;
+    edtKabul.clProSettings.IsFill = False; 
+    edtKabul.clProSettings.RoundHeight = 4;
+    edtKabul.clProSettings.RoundWidth = 4;
+    edtKabul.clProSettings.TextSettings.Font.Style = [fsBold];
+    edtKabul.SetclProSettings(edtKabul.clProSettings);
+    edtKabul.text='0';
+    
+    
+    lbl2Red = frmUretimDetay.AddNewProLabel(pnlSDBTKart, 'lbl2Red', 'red');
+    lbl2Red.Align = alcenter;
+    lbl2Red.Height=pnlSDBTKart.Height*4/100;
+    lbl2Red.Width=pnlSDBTKartMain.Width*40/100;
+    lbl2Red.margins.bottom  = pnlSDBTKart.Height*15/100;
+    lbl2Red.margins.left  = pnlSDBTKart.Width*45/100;
+    lbl2Red.clProSettings.FontSize = 11;
+    lbl2Red.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lbl2Red.clProSettings.FontVertAlign = palcenter;
+    lbl2Red.clProSettings.FontHorzAlign = palcenter;
+    lbl2Red.SetclProSettings(lbl2Red.clProSettings);
+    
+    edtRed=frmUretimDetay.AddNewProEdit(pnlSDBTKart,'edtRed', 'Red Miktari giriniz');
+    edtRed.Align=alcenter;
+    edtRed.clTypeOfField = taFloat; 
+    edtRed.Height=pnlSDBTKart.Height*10/100;
+    edtRed.Width=pnlSDBTKartMain.Width*40/100;
+    edtRed.margins.bottom  = pnlSDBTKart.Height*2/100;
+    //edtRed.margins.top  = pnlSDBTKart.Height*5/100;
+    edtRed.margins.left  = pnlSDBTKart.Width*44/100;
+    edtRed.clProSettings.FontSize = 24;
+    edtRed.clProSettings.BorderWidth=1;
+    edtRed.clProSettings.BorderColor = clAlphaColor.clHexToColor('#e13d3d');
+    edtRed.clProSettings.FontColor = clAlphaColor.clHexToColor('#e13d3d');
+    edtRed.clProSettings.Istransparent = False;
+    edtRed.clProSettings.IsFill = False; 
+    edtRed.clProSettings.RoundHeight = 4;
+    edtRed.clProSettings.RoundWidth = 4;
+    edtRed.clProSettings.TextSettings.Font.Style = [fsBold];
+    edtRed.SetclProSettings(edtRed.clProSettings);
+    edtRed.text='0';
+    
+    
+    lblZaman = frmUretimDetay.AddNewProLabel(pnlSDBTKart, 'lblZaman', 'Zaman(dakika)');
+    lblZaman.Align = alcenter;
+    lblZaman.Height=pnlSDBTKart.Height*4/100;
+    lblZaman.Width=pnlSDBTKartMain.Width*40/100;
+    lblZaman.margins.top  = pnlSDBTKart.Height*17/100;
+    lblZaman.clProSettings.FontSize = 11;
+    lblZaman.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblZaman.clProSettings.FontVertAlign = palcenter;
+    lblZaman.clProSettings.FontHorzAlign = palcenter;
+    lblZaman.SetclProSettings(lblZaman.clProSettings);
+    
+    edtZaman=frmUretimDetay.AddNewProEdit(pnlSDBTKart,'edtZaman', 'dakika türünden zaman giriniz');
+    edtZaman.Align=alcenter;
+    edtZaman.clTypeOfField = taFloat; 
+    edtZaman.Height=pnlSDBTKart.Height*10/100;
+    edtZaman.Width=pnlSDBTKartMain.Width*80/100;
+    edtZaman.margins.top  = pnlSDBTKart.Height*30/100;
+    edtZaman.clProSettings.FontSize = 24;
+    edtZaman.clProSettings.BorderWidth=1;
+    edtZaman.clProSettings.BorderColor = clAlphaColor.clHexToColor('#000000');
+    edtZaman.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    edtZaman.clProSettings.Istransparent = False;
+    edtZaman.clProSettings.IsFill = False; 
+    edtZaman.clProSettings.RoundHeight = 4;
+    edtZaman.clProSettings.RoundWidth = 4;
+    edtZaman.clProSettings.TextSettings.Font.Style = [fsBold];
+    edtZaman.SetclProSettings(edtZaman.clProSettings);
+    edtZaman.text='0';
+    
+    
+    btnKayit = frmUretimDetay.AddNewProButton(pnlSDBTKart,'btnKayit', 'KAYIT');
+    btnKayit.Align=alcenter;
+    btnKayit.Height=pnlSDBTKart.Height*10/100;
+    btnKayit.Width=pnlSDBTKart.Width*30/100;
+    btnKayit.margins.top  = pnlSDBTKart.Height*59/100;
+    btnKayit.clProSettings.BorderWidth=1;
+    btnKayit.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#2acf6a');
+    btnKayit.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+    btnKayit.clProSettings.RoundHeight = 10;
+    btnKayit.clProSettings.RoundWidth = 10;
+    btnKayit.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    btnKayit.clProSettings.FontSize = 25;
+    btnKayit.clProSettings.TextSettings.Font.Style = [fsBold];
+    btnKayit.SetclProSettings(btnKayit.clProSettings);
+  }
+    
+  }
+  frmUretimDetay.AddNewEvent(edtKabul,tbeOnEnter,'hideZero1');
+  frmUretimDetay.AddNewEvent(edtRed,tbeOnEnter,'hideZero2');
+  frmUretimDetay.AddNewEvent(edtZaman,tbeOnEnter,'hideZero3');
+  
+  
+  frmUretimDetay.AddNewEvent(edtKabul,tbeOnExit, 'showZero1');
+  frmUretimDetay.AddNewEvent(edtRed,tbeOnExit,   'showZero2');
+  frmUretimDetay.AddNewEvent(edtZaman,tbeOnExit, 'showZero3');
+  
+  
+  frmUretimDetay.AddNewEvent(btnKayit,tbeOnClick,'uretimKabul');
+  frmUretimDetay.run;
+}
+
+void zamanlayiciTetikle;
+{
+ clDoClick(btnGetir);
+ zamanlayici.Enabled = False;
+}
+
+
+void setRehber;
+{
+  try
+    try
+      sbRest.BaseURL = Zcontents.getUretim  ;
+      sbRest.Accept = 'application/json';
+      sbRest.Method = rmPOST;
+      if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+        sbRest.AddBody('{
+          "dataBase":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+          '"kulNo":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1)+'"'+
+          '}','application/json');
+      else
+        sbRest.AddBody('{
+          "dataBase":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+          '"kulNo":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1)+'"'+
+          '}','application/json');
+      sbRest.Execute;
+    except
+      ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message004922: ' +LastExceptionMessage);
+    }
+    
+    sbJSONDetailObject = Clomosy.ClDataSetFromJSON(sbRest.Response);
+    
+    if(sbJSONDetailObject.Found)
+    {
+      sbStrJsonData = ''; // JSON verisini baslatiyoruz
+      Sbcounter = 0; // Sayaç baslatiyoruz
+     
+      while (not sbJSONDetailObject.Eof)
+      {
+        // JSON ögesini ekliyoruz
+        if (Sbcounter > 0)
+        {
+          sbStrJsonData = sbStrJsonData + ',';
+        }
+          
+          sbStrJsonData = sbStrJsonData + 
+          '{
+            "rehberNo": "'  + sbJSONDetailObject.FieldByName('isemrI_BELGE_NO').AsString+'",'+
+            '"rehberAd": "'   + sbJSONDetailObject.FieldByName('isemrI_STOK_ADI').AsString + '",' +
+            '"rehberTarih": "'    + sbJSONDetailObject.FieldByName('isemrI_TARIH').AsString + '",'+
+            '"rehberISEmriProjeKod": "'  + sbJSONDetailObject.FieldByName('iE_PROJE_KODU').AsString+'",'+
+            '"rehberOprAd_Adet": "'  + sbJSONDetailObject.FieldByName('operasyoN_ADI').AsString+'   '+sbJSONDetailObject.FieldByName('uretilebiliR_MIKTAR').AsString+'",'+
+            '"rehebrOprMakKulRecId": "'  + sbJSONDetailObject.FieldByName('oprmakkuL_RECID').AsString+'",'+
+            '"rehberOprRecId": "'  + sbJSONDetailObject.FieldByName('operasyoN_RECID').AsString+'",'+
+            '"rehberOprReceteId": "'  + sbJSONDetailObject.FieldByName('recetehR_RECNO').AsString+'"'+
+            '}';
+        sbJSONDetailObject.Next; // Sonraki ögeye geç
+        
+        Sbcounter = Sbcounter + 1; // Sayaç artiriyoruz
+      }
+      // JSON dizisinin kapanisi
+      sbStrJsonData = '[' + sbStrJsonData + ']';
+     
+      // PPListView'i JSON verisi ile dolduruyoruz
+      
+      btnGetir.Visible  = false;
+      searchEdtRehber.Visible = True;
+      searchEdtRehber.Width = FrmGiris.clWidth*80/100;
+      searchEdtRehber.Margins.Left=0;
+      
+      lstUretimRehber.clearList;
+      lstUretimRehber.clLoadProListViewDataFromDataset(Clomosy.ClDataSetFromJSON(sbStrJsonData));
+      FrmGiris.AddNewEvent(lstUretimRehber,tbeOnItemClick,'setPanels');
+    }
+    else
+    {
+      clDoClick(FrmGiris.BtnGoBack);
+      ShowMessage('operasyon bulunamadi');
+    }
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0041: ' +LastExceptionMessage);
+  }
+  //FrmGiris.Close;
+  //}
+  
+}
+
+
+{
+  FrmGiris=TCLForm.Create(Self);
+  //ShowMessage(ZmainMenu.deneme);
+  sbRest=TCLRest.Create;
+  Zcontents.setApis;
+  
+  zamanlayici= FrmGiris.AddNewTimer(FrmGiris,'zamanlayici',2000);
+  zamanlayici.Enabled = True;
+  FrmGiris.AddNewEvent(zamanlayici,tbeOnTimer,'zamanlayiciTetikle');
+  
+  pnlUretimGiris  =  FrmGiris.AddNewProPanel(FrmGiris,'pnlUretimGiris');
+  clComponent.SetupComponent(pnlUretimGiris,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+  {
+    lstUretimRehber = FrmGiris.AddNewProListView(pnlUretimGiris,'lstUretimRehber');
+    lstUretimRehber.Align = alcenter;
+    lstUretimRehber.Height =  pnlUretimGiris.Height*85/100;
+    lstUretimRehber.Width =   pnlUretimGiris.Width *95/100;
+    lstUretimRehber.Margins.Bottom = pnlUretimGiris.Height*3/100;
+    lstUretimRehber.Margins.Top = pnlUretimGiris.Height*15/100;
+    lstUretimRehber.clProSettings.ViewType = lvWaterFall; //(lvList, lvIcon, lvWaterFall)
+    lstUretimRehber.clProSettings.ColCount = 1;
+    lstUretimRehber.clProSettings.ItemHeight = lstUretimRehber.Height*18/100;  //designer panel büyüklügü
+    lstUretimRehber.clProSettings.ItemSpace = lstUretimRehber.Height*2/100;
+    lstUretimRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFCFF');
+    lstUretimRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    lstUretimRehber.clProSettings.BorderWidth = 2;
+    lstUretimRehber.clProSettings.RoundHeight = 5;
+    lstUretimRehber.clProSettings.RoundWidth = 5;
+    lstUretimRehber.SetclProSettings(lstUretimRehber.clProSettings);
+    
+    btnGetir  = FrmGiris.AddNewpROButton(pnlUretimGiris,'btnGetir', 'KARTLAR BEKLENIYOR');
+    btnGetir.Align = alcenter;
+    btnGetir.Margins.Bottom = pnlUretimGiris.Height*85/100;
+    btnGetir.Height = pnlUretimGiris.Height*8/100;
+    btnGetir.Width = pnlUretimGiris.Width*45/100;
+    btnGetir.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+    btnGetir.clProSettings.RoundHeight = 10;
+    btnGetir.clProSettings.RoundWidth = 10;
+    btnGetir.clProSettings.BorderWidth = 1;
+    btnGetir.clProSettings.TextSettings.Font.Style = [fsBold];
+    btnGetir.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    btnGetir.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    btnGetir.SetclProSettings(btnGetir.clProSettings);
+    btnGetir.Visible = True;
+    
+    
+    searchEdtRehber = FrmGiris.AddNewProSearchEdit(pnlUretimGiris,'searchEdtRehber','ARAMA YAPINIZ');
+    searchEdtRehber.Align = alcenter;
+    searchEdtRehber.Margins.Bottom = pnlUretimGiris.Height*85/100;
+    searchEdtRehber.Margins.left = pnlUretimGiris.Width*30/100;
+    searchEdtRehber.Height = pnlUretimGiris.Height*8/100;
+    searchEdtRehber.Width = pnlUretimGiris.Width*5/100;
+    searchEdtRehber.TargetListView = lstUretimRehber;
+    searchEdtRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    searchEdtRehber.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    searchEdtRehber.clProSettings.IsRound = True;
+    searchEdtRehber.clProSettings.RoundHeight = 3;
+    searchEdtRehber.clProSettings.RoundWidth = 3;
+    searchEdtRehber.clProSettings.BorderWidth = 1;
+    searchEdtRehber.SetclProSettings(searchEdtRehber.clProSettings);
+    searchEdtRehber.Visible = False;
+    
+    DesignerPanelRehber        = FrmGiris.AddNewProListViewDesignerPanel(lstUretimRehber, 'DesignerPanelRehber');
+    DesignerPanelRehber.Align  = alMostTop;
+    DesignerPanelRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#b3fce5');
+    DesignerPanelRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+    DesignerPanelRehber.clProSettings.BorderWidth = 2;
+    DesignerPanelRehber.clProSettings.RoundHeight = 20;
+    DesignerPanelRehber.clProSettings.RoundWidth = 20;
+    DesignerPanelRehber.SetclProSettings(DesignerPanelRehber.clProSettings);
+    
+    lstUretimRehber.SetDesignerPanel(DesignerPanelRehber);
+    
+    
+    rehberAd = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberAd', 'stok ad');
+    rehberAd.Align = alcenter;
+    rehberAd.Height =lstUretimRehber.Height*4/100;
+    rehberAd.Width =DesignerPanelRehber.Width*90/100;
+    rehberAd.Margins.Bottom = DesignerPanelRehber.Height*80/100;
+    rehberAd.Margins.Right = 10;
+    rehberAd.Margins.Left = 10;
+    rehberAd.clProSettings.FontSize = 16;
+    rehberAd.SetclProSettings(rehberAd.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberAd, clcaption);
+    
+    rehberNo = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberNo', 'stok kod');
+    rehberNo.Align = alcenter;
+    rehberNo.Height =lstUretimRehber.Height*4/100;
+    rehberNo.Width =DesignerPanelRehber.Width*50/100;
+    rehberNo.Margins.Bottom = DesignerPanelRehber.Height*15/100;
+    rehberNo.Margins.Right = DesignerPanelRehber.Width*39/100;
+    rehberNo.clProSettings.FontSize = 14;
+    rehberNo.SetclProSettings(rehberNo.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberNo, clText1);
+    
+    rehberTarih = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberTarih', 'Uretim tarih');
+    rehberTarih.Align = alcenter;
+    rehberTarih.Height =lstUretimRehber.Height*4/100;
+    rehberTarih.Width =DesignerPanelRehber.Width*50/100;
+    rehberTarih.Margins.Bottom = DesignerPanelRehber.Height*12/100;
+    rehberTarih.Margins.left = DesignerPanelRehber.Width*60/100;
+    rehberTarih.clProSettings.FontSize = 12;
+    rehberTarih.SetclProSettings(rehberTarih.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberTarih, clText2);
+    
+    rehberISEmriProjeKod = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberISEmriProjeKod', 'Uretim miktar');
+    rehberISEmriProjeKod.Align = alcenter;
+    rehberISEmriProjeKod.Height =lstUretimRehber.Height*4/100;
+    rehberISEmriProjeKod.Width =DesignerPanelRehber.Width*50/100;
+    rehberISEmriProjeKod.Margins.top = DesignerPanelRehber.Height*42/100;
+    rehberISEmriProjeKod.Margins.Right = DesignerPanelRehber.Width*39/100;
+    rehberISEmriProjeKod.clProSettings.FontSize = 12;
+    rehberISEmriProjeKod.SetclProSettings(rehberISEmriProjeKod.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberISEmriProjeKod, clText3);
+  
+    rehberOprAd_Adet = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberOprAd_Adet', 'test1');
+    rehberOprAd_Adet.Align = alcenter;
+    rehberOprAd_Adet.Height =lstUretimRehber.Height*4/100;
+    rehberOprAd_Adet.Width =DesignerPanelRehber.Width*70/100;
+    rehberOprAd_Adet.Margins.top = DesignerPanelRehber.Height*87/100;
+    rehberOprAd_Adet.Margins.Right = DesignerPanelRehber.Width*19/100;
+    rehberOprAd_Adet.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    rehberOprAd_Adet.clProSettings.FontSize = 12;
+    DesignerPanelRehber.AddPanelObject(rehberOprAd_Adet, clText4);
+  
+    rehebrOprMakKulRecId = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehebrOprMakKulRecId', 'test1');
+    rehebrOprMakKulRecId.Align = alBottom;
+    rehebrOprMakKulRecId.Height =lstUretimRehber.Height*4/100;
+    rehebrOprMakKulRecId.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    rehebrOprMakKulRecId.clProSettings.FontSize = 12;
+    DesignerPanelRehber.AddPanelObject(rehebrOprMakKulRecId, clText);
+    rehebrOprMakKulRecId.Visible=False;
+  
+    rehberOprRecId = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberOprRecId', 'test1');
+    rehberOprRecId.Align = alBottom;
+    rehberOprRecId.Height =lstUretimRehber.Height*4/100;
+    rehberOprRecId.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    rehberOprRecId.clProSettings.FontSize = 12;
+    DesignerPanelRehber.AddPanelObject(rehberOprRecId, clText5);
+    rehberOprRecId.Visible=False;
+  
+    rehberOprReceteId = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberOprReceteId', 'test1');
+    rehberOprReceteId.Align = alBottom;
+    rehberOprReceteId.Height =lstUretimRehber.Height*4/100;
+    rehberOprReceteId.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    rehberOprReceteId.clProSettings.FontSize = 12;
+    DesignerPanelRehber.AddPanelObject(rehberOprReceteId, clText6);
+    rehberOprReceteId.Visible=False;
+  }
+  
+  {
+    try
+      sbRest.BaseURL = Zcontents.getUretim  ;
+      sbRest.Accept = 'application/json';
+      sbRest.Method = rmPOST;
+      if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+        sbRest.AddBody('{
+          "dataBase":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+          '"kulNo":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1)+'"'+
+          '}','application/json');
+      else
+        sbRest.AddBody('{
+          "dataBase":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+          '"kulNo":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,1)+'"'+
+          '}','application/json');
+      sbRest.Execute;
+    except
+      ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0049: ' +LastExceptionMessage);
+    }
+  }
+  FrmGiris.AddNewEvent(btnGetir,tbeOnClick,'setRehber');
+  
+  FrmGiris.run;
+}

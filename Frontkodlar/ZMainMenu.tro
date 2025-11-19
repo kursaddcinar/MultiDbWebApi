@@ -1,0 +1,470 @@
+uses Zcontents;
+var 
+  MyForm : TCLForm;
+  sideMenu : TClMenuFrame;
+  btnSideBar,btnCari,btnStok,btnRecete,btnKasa,btnBanka,btnCekSenet,btnIsEmri,btnRapor,btnSiparisler,btnSatinAlimlar,btnUretim: TClProButton;
+  btnSetting,btnExit: TClProButton;
+  pnlTop,pnlMain,sideuserpanel,sidebottompanel,cizpanel,cizpanel2,pnlBottom,pnlLogo:TclProPanel;
+  kullimg,ayarimg,extimg,imgLogo  : TClProImage;
+  lblUnitName,lblDBName,kull_isimLbl ,kull_email: TClProLabel;
+  vertScrollBoxMenu : TclVertScrollBox;
+  uCari,uStok,uKasa,uBanka,uCekSenet,uRecete,uIsEmri,uUretim : TCLUnit;
+  
+  pnlLbl,pnlBtn; TCLProPanel;
+  lblCokKullan  ; TCLProLabel;
+  btnCokKul1,btnCokKul2,btnCokKul3,btnCokKul4,btnCokKul5  ; TClProButton;
+  
+  deneme:String;
+
+
+void yetkiKontrol;
+{
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 6) == 'E')
+    btnCari.Visible = True;
+  else
+    btnCari.Visible = False;
+  
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 7) == 'E')
+    btnStok.Visible = True;
+  else
+    btnStok.Visible = False;
+  /*
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 8) == 'E')
+    btnRecete.Visible = True;
+  else
+    btnRecete.Visible = False;
+  */
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 9) == 'E')
+    btnKasa.Visible = True;
+  else
+    btnKasa.Visible = False;
+  
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 10) == 'E')
+    btnBanka.Visible = True;
+  else
+    btnBanka.Visible = False;
+  
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 11) == 'E')
+    btnCekSenet.Visible = True;
+  else
+    btnCekSenet.Visible = False;
+  /*
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 12) == 'E')
+    btnIsEmri.Visible = True;
+  else
+    btnIsEmri.Visible = False;
+  */
+  /*
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 13) == 'E')
+    btnRapor.Visible = True;
+  else
+    btnRapor.Visible = False;
+  
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 14) == 'E')
+    btnSiparisler.Visible = True;
+  else
+    btnSiparisler.Visible = False;
+  
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 15) == 'E')
+    btnSatinAlimlar.Visible = True;
+  else
+    btnSatinAlimlar.Visible = False;*/
+  
+  if(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList, 16) == 'E')
+  {
+    btnUretim.Visible = True;
+    btnRecete.Visible = True;
+    btnIsEmri.Visible = True;
+  }
+  else
+  {
+    btnUretim.Visible = False;
+    btnRecete.Visible = False;
+    btnIsEmri.Visible = False;
+  }
+    
+
+}
+
+void sideKapa;
+{
+  sideMenu.Visible=True;
+  clRTMethod(sideMenu, 'BringTofront');
+}
+
+void sideac;
+{
+  sideMenu.Visible=True;
+  clRTMethod(sideMenu, 'BringTofront');
+}
+
+
+void GoToMainCari;//cariye gecis proseduru
+{
+  MyForm.clShow;
+  uCari.UnitName = 'ZCariStringGridYeni';
+  uCari.CallerForm = MyForm;
+  uCari.Run;
+}
+
+void stokunitac;
+{
+  MyForm.clShow;
+  //uStok.UnitName = 'ZStokStringGrid';
+  uStok.UnitName = 'ZStokStringGridYeni';
+  uStok.CallerForm = MyForm;
+  uStok.Run;
+}
+
+void GoToKasa;
+{
+  MyForm.clShow;
+  uKasa.UnitName = 'ZKasa';
+  uKasa.CallerForm = MyForm;
+  uKasa.Run;
+}
+
+void GotoBanka;
+{
+  MyForm.clShow;
+  uBanka.UnitName = 'ZBanka';
+  uBanka.CallerForm = MyForm;
+  uBanka.Run;
+}
+
+void GoToCekSenet;
+{
+  MyForm.clShow;
+  uCekSenet.UnitName = 'ZCekSenet';
+  uCekSenet.CallerForm = MyForm;
+  uCekSenet.Run;
+}
+
+void GoToRecete;
+{
+  MyForm.clShow;
+  uRecete.UnitName = 'ZRecete';
+  uRecete.CallerForm = MyForm;
+  uRecete.Run;
+}
+
+void GoToIsEmri;
+{
+  MyForm.clShow;
+  uIsEmri.UnitName = 'ZIsEmri';
+  uIsEmri.CallerForm = MyForm;
+  uIsEmri.Run;
+}
+
+void GoToUretim;
+{
+  MyForm.clShow;
+  uUretim.UnitName = 'ZUretim';
+  uUretim.CallerForm = MyForm;
+  uUretim.Run;
+}
+
+void disticaretac;
+{
+}
+
+void kalitekontrolac;
+{
+}
+
+
+
+void setImgSDMenu;
+Var
+  sideImg : TClProImage;
+{
+  sideImg = MyForm.AddNewProImage(sideMenu.MenuBar,'sideImg');
+  clComponent.SetupComponent(sideImg,
+  '{"Align" : "Contents",
+  "ImgUrl":"https://e0.pxfuel.com/wallpapers/96/70/desktop-wallpaper-red-and-black-iphone-posted-black-and-red-abstract.jpg",
+  "ImgFit":"yes",
+  "ImgStretch":"yes"}');
+}
+
+void setimagebg;
+Var
+  testImg : TClProImage;
+{
+  testImg = MyForm.AddNewProImage(pnlMain,'testImg');
+  clComponent.SetupComponent(testImg,
+  '{"Align" : "client",
+  "ImgUrl":"https://e0.pxfuel.com/wallpapers/96/70/desktop-wallpaper-red-and-black-iphone-posted-black-and-red-abstract.jpg",
+  "ImgFit":"yes",
+  "ImgStretch":"yes"}');
+  //clRTMethod(testImg, 'SendToBack');
+}
+
+
+{
+MyForm = TCLForm.Create(Self);
+deneme='denemeStr';
+TclButton(MyForm.clFindComponent('LytTopBar')).Visible = False;
+
+{//unit tanimla
+  uCari = TCLUnit.Create;
+  uStok = TCLUnit.Create;
+  uKasa = TCLUnit.Create;
+  uBanka  = TCLUnit.Create;
+  uCekSenet  = TCLUnit.Create;
+  uRecete  = TCLUnit.Create;
+  uIsEmri  = TCLUnit.Create;
+  uUretim  = TCLUnit.Create;
+}
+
+TclButton(MyForm.clFindComponent('BtnFormMenu')).Visible = False;
+
+
+  pnlMain=MyForm.AddNewProPanel(MyForm,'pnlMain');
+  pnlMain.Align = alClient;
+  //pnlMain.Height=40;
+  //pnlMain.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#8fbbc6');//ba9191
+  pnlMain.SetclProSettings(pnlMain.clProSettings);
+  setimagebg;
+  
+  pnlTop=MyForm.AddNewProPanel(pnlMain,'pnlTop');
+  pnlTop.Align = alTop;
+  pnlTop.Height=pnlMain.Height*5/100;
+  pnlTop.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+  pnlTop.SetclProSettings(pnlTop.clProSettings);
+  
+  if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+    lblDBName=MyForm.AddNewProLabel(pnlTop, 'lblDBName', Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4) );
+  else
+    lblDBName=MyForm.AddNewProLabel(pnlTop, 'lblDBName', Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) );
+    
+  lblDBName.Align=alRight;
+  lblDBName.Width=pnlTop.Width*30/100;
+  lblDBName.clProSettings.FontSize = 14;
+  lblDBName.clProSettings.FontHorzAlign=palTrailing;
+  lblDBName.clProSettings.FontVertAlign=palLeading;
+  lblDBName.clProSettings.FontColor = clAlphaColor.clHexToColor('#d61f1f');
+  lblDBName.SetclProSettings(lblDBName.clProSettings);
+  
+  lblUnitName=MyForm.AddNewProLabel(pnlTop, 'lblUnitName', 'ANA MENU');
+  lblUnitName.Align=alright;
+  lblUnitName.Width=pnlTop.Width*30/100;
+  lblUnitName.clProSettings.FontSize = 17;
+  lblUnitName.clProSettings.FontHorzAlign=palCenter;
+  lblUnitName.clProSettings.FontVertAlign=palCenter;
+  lblUnitName.clProSettings.FontColor = clAlphaColor.clHexToColor('#ff0000');
+  lblUnitName.clProSettings.TextSettings.Font.Style = [fsBold];
+  lblUnitName.SetclProSettings(lblUnitName.clProSettings);
+  lblUnitName.Visible=false;
+
+  pnlBottom=MyForm.AddNewProPanel(pnlMain,'pnlBottom');
+  pnlBottom.Align = alBottom;
+  pnlBottom.Height=pnlMain.Height*95/100;
+ // pnlBottom.Height=600;
+  pnlBottom.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#8fbbc6');
+  pnlBottom.clProSettings.IsFill = True; 
+  pnlBottom.clProSettings.Istransparent = True; 
+  pnlBottom.clProSettings.IsRound = True;
+  pnlBottom.SetclProSettings(pnlBottom.clProSettings);
+  pnlBottom.Visible=false;
+  
+  
+
+//SIDE BAR AÇ-KAPA BUTON
+btnSideBar= MyForm.AddNewProButton(pnlTop,'btnSideBar','');
+clComponent.SetupComponent(btnSideBar,'{"MarginLeft":5,"Align":"Left",
+   "ImgUrl":"https://cdn-icons-png.freepik.com/512/12319/12319474.png",
+   "ImgFit":"yes",
+   "ImgStretch":"yes"}');
+btnSideBar.Width=pnlTop.Width*13/100;
+
+//SIDE PANEL EKRANI 
+sideMenu = MyForm.AddNewMenuFrame(pnlMain,'sideMenu');
+sideMenu.Align = alContents;
+sideMenu.MenuBar.Width = pnlMain.Width*60/100;
+sideMenu.ClMenuPosition = clLeft; //Default clRight
+sideMenu.Visible=False;
+sideMenu.VertScrollBox=True;
+
+setImgSDMenu;
+
+//SIDE PANEL ÜST KISIM
+sideuserpanel=MyForm.AddNewProPanel(sideMenu.MenuBar,'sideuserpanel');
+sideuserpanel.Align=alTop;
+sideuserpanel.Height=150;
+sideuserpanel.clProSettings.BorderWidth = 1;
+sideuserpanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+sideuserpanel.SetclProSettings(sideuserpanel.clProSettings);
+{
+  //KULLANICI FOTOGRAFI
+  kullimg=MyForm.AddNewProImage(sideuserpanel,'kullimg');
+  kullimg.Align=alTop;
+  kullimg.Margins.Top=pnlMain.Height*4/100;
+  kullimg.Height=60;
+  kullimg.Width=60;
+  kullimg.clProSettings.PictureSource='https://cdn-icons-png.freepik.com/512/4885/4885590.png';
+  kullimg.SetclProSettings(kullimg.clProSettings);
+  
+  //KULLANICI ISMI  
+  kull_isimLbl=MyForm.AddNewProLabel(sideuserpanel, 'kull_isimLbl', 'name surname');
+  kull_isimLbl.Align=alCenter;
+  kull_isimLbl.clProSettings.FontSize = 18;
+  kull_isimLbl.clProSettings.FontColor = clAlphaColor.clHexToColor('#ff0000');
+  kull_isimLbl.SetclProSettings(kull_isimLbl.clProSettings);
+  kull_isimLbl.Text=Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,2);
+  
+  //KULLANICI E-MAIL   
+  kull_email=MyForm.AddNewProLabel(sideuserpanel, 'kull_email', 'example@gmail.com');
+  kull_email.Align=alCenter;
+  kull_email.Width=150;
+  kull_email.Margins.Top=40;
+  kull_email.clProSettings.FontSize = 13;
+  kull_email.Text=Clomosy.GlobalVariableString;
+  kull_email.clProSettings.FontColor = clAlphaColor.clHexToColor('#ff0000');
+  kull_email.SetclProSettings(kull_email.clProSettings);
+  kull_email.Text=Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,3);
+}
+
+//SIDE PANEL ÜST ÇIZGI
+cizpanel2=MyForm.AddNewProPanel(sideMenu.MenuBar,'cizpanel2');
+cizpanel2.Align=alTop;
+cizpanel2.Margins.Left=25;
+cizpanel2.Margins.Right=25;
+cizpanel2.Height=7;
+cizpanel2.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#f5f5f5');
+cizpanel2.SetclProSettings(cizpanel2.clProSettings);
+    
+//SIDE PANEL SCROLL    
+vertScrollBoxMenu = MyForm.AddNewVertScrollBox(sideMenu.MenuBar,'vertScrollBox');
+vertScrollBoxMenu.Align = alClient;
+vertScrollBoxMenu.ShowScrollBars = True;
+
+  //side BUTONLAR
+  {
+    btnCari= MyForm.AddNewProButton(vertScrollBoxMenu,'btnCari','CARI');
+    clComponent.SetupComponent(btnCari,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    
+    
+    btnCari.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+    btnCari.clProSettings.FontSize = 20;
+    btnCari.clProSettings.TextSettings.Font.Style = [fsBold];
+    btnCari.SetclProSettings(btnCari.clProSettings);
+     
+    btnStok= MyForm.AddNewProButton(vertScrollBoxMenu,'btnStok','STOK');
+    clComponent.SetupComponent(btnStok,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    //btnStok.Visible=False;
+    btnStok.SetclProSettings(btnCari.clProSettings);
+    
+    btnKasa= MyForm.AddNewProButton(vertScrollBoxMenu,'btnKasa','KASA');
+    clComponent.SetupComponent(btnKasa,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnKasa.SetclProSettings(btnCari.clProSettings);
+    
+    btnBanka= MyForm.AddNewProButton(vertScrollBoxMenu,'btnBanka','BANKA');
+    clComponent.SetupComponent(btnBanka,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnBanka.SetclProSettings(btnCari.clProSettings);
+    
+    btnCekSenet= MyForm.AddNewProButton(vertScrollBoxMenu,'btnCekSenet','CEK SENET');
+    clComponent.SetupComponent(btnCekSenet,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnCekSenet.SetclProSettings(btnCari.clProSettings);
+    
+    btnRecete= MyForm.AddNewProButton(vertScrollBoxMenu,'btnRecete','RECETE');
+    clComponent.SetupComponent(btnRecete,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnRecete.SetclProSettings(btnCari.clProSettings);
+     
+    btnIsEmri= MyForm.AddNewProButton(vertScrollBoxMenu,'btnIsEmri','IS EMRI');
+    clComponent.SetupComponent(btnIsEmri,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnIsEmri.SetclProSettings(btnCari.clProSettings);
+    
+    btnUretim= MyForm.AddNewProButton(vertScrollBoxMenu,'btnUretim','OPERASYON G.');
+    clComponent.SetupComponent(btnUretim,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnUretim.SetclProSettings(btnCari.clProSettings);
+    /*
+    
+    btnRapor= MyForm.AddNewProButton(vertScrollBoxMenu,'btnRapor','RAPOR');
+    clComponent.SetupComponent(btnRapor,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnRapor.SetclProSettings(btnCari.clProSettings);
+    
+    btnSiparisler= MyForm.AddNewProButton(vertScrollBoxMenu,'btnSiparisler','SIPARISLER');
+    clComponent.SetupComponent(btnSiparisler,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnSiparisler.SetclProSettings(btnCari.clProSettings);
+    
+    btnSatinAlimlar= MyForm.AddNewProButton(vertScrollBoxMenu,'btnSatinAlimlar','SATIN ALIMLAR');
+    clComponent.SetupComponent(btnSatinAlimlar,'{"Height":50,"MarginTop":30,"Align":"Top","TextHorizontalAlign":"center",
+     "TextColor":"#FFFFFF","TextBold":"yes"}');
+    btnSatinAlimlar.SetclProSettings(btnCari.clProSettings);
+    */
+  }
+
+//SIDE PANEL ALT KISIM
+sidebottompanel=MyForm.AddNewProPanel(sideMenu.MenuBar,'sidebottompanel');
+sidebottompanel.Align=alBottom;
+sidebottompanel.Height=70;
+sidebottompanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+sidebottompanel.SetclProSettings(sidebottompanel.clProSettings);
+{
+  //SIDE PANEL ALT ÇIZGI
+  cizpanel=MyForm.AddNewProPanel(sideMenu.MenuBar,'cizpanel');
+  cizpanel.Align=alBottom;
+  cizpanel.Margins.Left=25;
+  cizpanel.Margins.Right=25;
+  cizpanel.Height=7;
+  cizpanel.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#f5f5f5');
+  cizpanel.SetclProSettings(cizpanel.clProSettings);
+  
+  //ÇIKIS BUTON
+  btnExit= MyForm.AddNewProButton(sidebottompanel,'btnExit','');
+  clComponent.SetupComponent(btnExit,'{"Height":30,"Width":30,"MarginTop":15,"MarginBottom":15,"MarginLeft":25,"Align":"Left",
+     "ImgUrl":"https://i.imgur.com/E0BnsTj.png",
+     "ImgFit":"yes",
+     "ImgStretch":"yes"}');
+  
+  //KULLANICI AYAR BUTONU  
+  btnSetting= MyForm.AddNewProButton(sidebottompanel,'btnSetting','');
+  clComponent.SetupComponent(btnSetting,'{"Height":30,"Width":30,"MarginTop":15,"MarginBottom":15,"MarginRight":25,"Align":"Right",
+     "ImgUrl":"https://i.imgur.com/zdIelyg.png",
+     "ImgFit":"yes",
+     "ImgStretch":"yes"}');
+  btnSetting.Visible=False;
+}
+
+pnlLogo=MyForm.AddNewProPanel(pnlMain,'pnlLogo');
+pnlLogo.Align = alCenter;
+pnlLogo.Height  = MyForm.clheight*15/100;
+pnlLogo.Width   = MyForm.clheight*15/100;
+pnlLogo.Margins.Bottom  = MyForm.clheight*60/100;
+pnlLogo.Margins.Left    = MyForm.clWidth*62/100;
+//pnlLogo.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#dbff29');
+pnlLogo.SetclProSettings(pnlLogo.clProSettings);
+
+  imgLogo=MyForm.AddNewProImage(pnlLogo,'imgLogo');
+  imgLogo.Align=alClient;
+  imgLogo.clProSettings.PictureSource='https://r.resimlink.com/FScJt2-w_C18.png';
+  imgLogo.SetclProSettings(imgLogo.clProSettings);
+
+
+MyForm.AddNewEvent(btnSideBar, tbeOnClick, 'sideac');
+MyForm.AddNewEvent(btnCari, tbeOnClick, 'GoToMainCari');
+MyForm.AddNewEvent(btnStok, tbeOnClick, 'stokunitac');
+MyForm.AddNewEvent(btnKasa, tbeOnClick, 'GoToKasa');
+MyForm.AddNewEvent(btnBanka, tbeOnClick, 'GotoBanka');
+MyForm.AddNewEvent(btnCekSenet, tbeOnClick, 'GoToCekSenet');
+MyForm.AddNewEvent(btnRecete, tbeOnClick, 'GoToRecete');
+MyForm.AddNewEvent(btnIsEmri, tbeOnClick, 'GoToIsEmri');
+MyForm.AddNewEvent(btnUretim, tbeOnClick, 'GoToUretim');
+
+
+yetkiKontrol;
+sideac;
+
+
+MyForm.Run;
+}

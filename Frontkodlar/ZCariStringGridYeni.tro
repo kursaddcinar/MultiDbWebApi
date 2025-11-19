@@ -1,0 +1,694 @@
+
+uses Zcontents;
+var 
+  frmCariDetay : TCLForm;
+  pnlCDMain,pnlCDTop,pnlCDKart,pnlCDHareket  : TclProPanel;
+  pnlCDBottom,pnlCDBTKart,pnlCDBTHareket,pnlMemoAdres,pnlMemoCAd: TclProPanel;
+  imgCDKart,imgCDHareket,imgCDDiger : TCLImage;
+  lblCDKart,lblCDHareket,lblCDDiger  : TClProLabel;
+  lstCariKart : TClProListView;
+  DesignerPanelCariDetay : TClProListViewDesignerPanel;
+  carI_KODU,carI_ADI,lblAd,lblKod
+  lblCDTelefon,lblCDEpposta,lblCDAdres,lblCDBorc,lblCDAlacak,lblBakiyet,
+  carI_TELEFON,carI_EPOSTA,carI_ADRES,borC_TOPLAM,alacaK_TOPLAM,bakiyet  : TClProLabel;
+  JSONObject: TCLJSONQuery;
+  strCariHareketJSON  : String;
+  grdHareket: TCLStringGrid;
+  btnGetir  : TClProButton;
+  edtGelen : TclProEdit;
+  
+  sbStrJsonData: string;  // JSON verisini tutacagiz
+  Sbcounter: Integer;
+  sbJSONDetailObject: TCLJSONQuery;
+  
+  lstCariRehber : TClProListView;
+
+  zamanlayici: TClTimer;
+  
+  memoAdres,memoCAD : TclMemo;
+
+
+  FrmGiris : TCLForm;
+  pnlCariGiris  : TclProPanel;
+  rehberAd,rehberKod,rehberAdres,rehberTel  : TClProLabel;
+  DesignerPanelRehber : TClProListViewDesignerPanel;
+  sbRest,hrRest  : TCLRest;
+  
+  pnlCDBTKartMain,pnlCDBTKartLeft,pnlCDBTKartRight,pnlCizgi  : TclProPanel;
+
+
+void modifyHareketGrid;//hareket grid görünüm güncelleme
+var
+  rowLenght,i,j  : Integer;
+{
+  rowLenght=0;
+  i=0;
+  j=0;
+  try
+    while(j <> grdHareket.ColumnCount )
+    {
+      while(i <> grdHareket.RowCount )
+      {
+        if(Length(grdHareket.Cells[j,i])  > rowLenght)
+        {
+          rowLenght=Length(grdHareket.Cells[j,i]);
+        }
+        Inc(i);
+      }
+      if(rowLenght<11)
+        rowLenght=10;
+      grdHareket.Columns[j].Width = frmCariDetay.clwidth*11*rowLenght/1000*3;//pnl_cari_detail.Width*rowLenght/100*15/100;
+      rowLenght=0;
+      i=0;
+      Inc(j);
+    }
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message361: ' +LastExceptionMessage);
+  }
+}
+
+void setHareketGrid;//+ // listviewe tiklandiktan sonra cari harekletlerini gride set ediyoruz 
+Var
+  hrRest  : TCLRest;
+  hrJSONObject: TCLJSONQuery;
+{
+  hrRest=TCLRest.Create;
+  try
+    hrRest.BaseURL = Zcontents.getCariHR;
+    hrRest.Accept = 'application/json';
+    hrRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      hrRest.AddBody('{"databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'","cariKod":"'+lstCariRehber.clSelectedItemData(clText1)+'"}','application/json');//!!!!!!cari kod almayi unutma
+    else
+      hrRest.AddBody('{"databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'","cariKod":"'+lstCariRehber.clSelectedItemData(clText1)+'"}','application/json');
+    //lstCariKart.clSelectedItemData(clText)
+    hrRest.Execute;
+    
+    hrJSONObject = Clomosy.ClDataSetFromJSON(hrRest.Response);
+    
+    if(hrJSONObject.Found)
+    {
+      frmCariDetay.RemoveGridBinding('mylink'); 
+      frmCariDetay.AddNewGridBinding(grdHareket,hrJSONObject, 'mylink');
+      //modifyHareketGrid;
+    }
+    else
+      ShowMessage('cari hareket bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message00411: ' +LastExceptionMessage);
+  }
+  modifyHareketGrid;
+}
+
+void clickKart;
+{
+  pnlCDBTKart.visible     = True;
+  pnlCDBTHareket.visible  = False;
+  /*
+  pnlCDKart.visible = True;
+  pnlCDHareket.visible = False;
+  */
+  clComponent.SetupComponent(pnlCDKart,'{"BackgroundColor":"#6ffbf2"}');
+  clComponent.SetupComponent(pnlCDHareket,'{"BackgroundColor":"#c0eeba"}');
+  
+  setHareketGrid;
+}
+
+void clickHareket;
+{
+  pnlCDBTKart.visible     = False;
+  pnlCDBTHareket.visible  = True;
+  setHareketGrid;
+  /*
+  pnlCDKart.visible = False;
+  pnlCDHareket.visible = True;
+  */
+  clComponent.SetupComponent(pnlCDKart,'{"BackgroundColor":"#c0eeba"}');
+  clComponent.SetupComponent(pnlCDHareket,'{"BackgroundColor":"#6ffbf2"}');
+}
+
+void clickDiger;
+{
+  pnlCDBTKart.visible     = False;
+  pnlCDBTHareket.visible  = False;
+  
+  
+  clComponent.SetupComponent(pnlCDKart,'{"BackgroundColor":"#c0eeba"}');
+  clComponent.SetupComponent(pnlCDHareket,'{"BackgroundColor":"#c0eeba"}');
+}
+
+void setPanels;
+var
+  kartRest  : TCLRest;
+  kartJSONObject: TCLJSONQuery;
+  kartStrJsonData : String;
+{
+  
+  frmCariDetay  = TCLForm.Create(Self);
+  kartRest  = TCLRest.Create;
+  
+  TclButton(frmCariDetay.clFindComponent('LytTopBar')).Visible = False;
+  
+  pnlCDMain = frmCariDetay.AddNewProPanel(frmCariDetay,'pnlCDMain');
+  clComponent.SetupComponent(pnlCDMain,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+    
+  
+  //üst panel
+  pnlCDTop = frmCariDetay.AddNewProPanel(pnlCDMain,'pnlCDTop');
+  clComponent.SetupComponent(pnlCDTop,'{"Align" : "top","BackgroundColor":"#c0eeba"}');
+  pnlCDTop.height= pnlCDMain.height *12/100;
+  
+  {//üst panel içerikleri
+    pnlCDKart = frmCariDetay.AddNewProPanel(pnlCDTop,'pnlCDKart');
+    clComponent.SetupComponent(pnlCDKart,'{"Align" : "left","BackgroundColor":"#6ffbf2"}');
+    pnlCDKart.width = pnlCDTop.width  *50/100;
+    {
+      imgCDKart = frmCariDetay.AddNewImage(pnlCDKart,'imgCDKart');
+      imgCDKart.Align = alCenter;
+      imgCDKart.Height =  pnlCDKart.Height*45/100;
+      imgCDKart.Width =   pnlCDKart.Height*45/100;
+      imgCDKart.Margins.bottom  = pnlCDKart.Height*25/100;
+      frmCariDetay.setImage(imgCDKart,'https://cdn-icons-png.freepik.com/512/16870/16870828.png');
+      
+      lblCDKart = frmCariDetay.AddNewProLabel(pnlCDKart, 'lblCDKart', 'Cari Kart');
+      lblCDKart.Align = alCenter;
+      lblCDKart.Height =  pnlCDKart.Height*25/100;
+      lblCDKart.Width =   pnlCDKart.Width *60/100;
+      lblCDKart.Margins.top  = pnlCDKart.Height*45/100;
+      lblCDKart.clProSettings.FontSize = 16;
+      lblCDKart.clProSettings.FontHorzAlign=palCenter;
+      lblCDKart.clProSettings.FontVertAlign=palCenter;
+      lblCDKart.SetclProSettings(lblCDKart.clProSettings);
+    }
+  
+    
+    pnlCDHareket = frmCariDetay.AddNewProPanel(pnlCDTop,'pnlCDHareket');
+    clComponent.SetupComponent(pnlCDHareket,'{"Align" : "right","BackgroundColor":"#c0eeba"}');
+    pnlCDHareket.width = pnlCDTop.width  *50/100;
+    pnlCDHareket.height= pnlCDTop.height *100/100;
+    {
+      imgCDHareket = frmCariDetay.AddNewImage(pnlCDHareket,'imgCDHareket');
+      imgCDHareket.Align = alCenter;
+      imgCDHareket.Height =  pnlCDHareket.Height*45/100;
+      imgCDHareket.Width =   pnlCDHareket.Height*45/100;
+      imgCDHareket.Margins.bottom  = pnlCDHareket.Height*30/100;
+      frmCariDetay.setImage(imgCDHareket,'https://cdn-icons-png.freepik.com/512/1600/1600000.png');
+      
+      lblCDHareket = frmCariDetay.AddNewProLabel(pnlCDHareket, 'lblCDHareket', 'Hareketler');
+      lblCDHareket.Align = alCenter;
+      lblCDHareket.Height =  pnlCDHareket.Height*25/100;
+      lblCDHareket.Width =   pnlCDHareket.Width *60/100;
+      lblCDHareket.Margins.top  = pnlCDHareket.Height*40/100;
+      lblCDHareket.SetclProSettings(lblCDKart.clProSettings);
+    }
+  }
+  
+  //alt panel
+  pnlCDBottom = frmCariDetay.AddNewProPanel(pnlCDMain,'pnlCDBottom');
+  clComponent.SetupComponent(pnlCDBottom,'{"Align" : "bottom","BackgroundColor":"#ffffff"}');
+  pnlCDBottom.height = pnlCDMain.height *85/100;
+  
+  {
+    //CariKart panel
+    pnlCDBTKart = frmCariDetay.AddNewProPanel(pnlCDBottom,'pnlCDBTKart');
+    clComponent.SetupComponent(pnlCDBTKart,'{"Align" : "bottom","BackgroundColor":"#ffffff"}');
+    pnlCDBTKart.height = pnlCDBottom.height *95/100;
+    pnlCDBTKart.visible = true;
+    {
+      
+    }
+    
+    //hareket panel
+    pnlCDBTHareket = frmCariDetay.AddNewProPanel(pnlCDBottom,'pnlCDBTHareket');
+    clComponent.SetupComponent(pnlCDBTHareket,'{"Align" : "bottom"}');
+    pnlCDBTHareket.height = pnlCDBottom.height *95/100;
+    pnlCDBTHareket.visible = false;
+    
+    {//hareket grid
+      grdHareket = frmCariDetay.AddNewStringGrid(pnlCDBTHareket, 'grdHareket');
+      grdHareket.Align = alcenter;
+      grdHareket.width  = pnlCDBTHareket.width*95/100;
+      grdHareket.Height  = pnlCDBTHareket.height*95/100;
+      grdHareket.ReadOnly = TRUE;
+    }
+    
+    
+    
+    
+    
+  lblKod = frmCariDetay.AddNewProLabel(pnlCDBTKart, 'lblKod', 'cari kod');
+  lblKod.Align = altop;
+  lblKod.Height =pnlCDBTKart.Height*8/100;
+  lblKod.margins.top  = pnlCDBTKart.Height*10/100;
+  lblKod.clProSettings.FontSize = 15;
+  lblKod.clProSettings.FontVertAlign = palcenter;
+  lblKod.clProSettings.FontHorzAlign = palcenter;
+  lblKod.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lblKod.margins.top  = pnlCDBTKart.Height*2/100;
+  lblKod.SetclProSettings(lblKod.clProSettings);
+  
+  pnlMemoCAd = frmCariDetay.AddNewProPanel(pnlCDBTKart,'pnlMemoCAd');
+  clComponent.SetupComponent(pnlMemoCAd,'{"Align" : "top"}');
+  pnlMemoCAd.Height = pnlCDBTKart.Height*15/100;
+  
+  memoCAD = frmCariDetay.AddNewMemo(pnlMemoCAd,'memoCAD','');
+  memoCAD.Align = alcenter;
+  memoCAD.width = pnlMemoCAd.width*90/100;
+  memoCAD.Height = pnlMemoCAd.Height*100/100;
+  memoCAD.ReadOnly = True;
+  memoCAD.TextSettings.WordWrap = True;
+  memoCAD.StyledSettings = ssFamily;
+  memoCAD.TextSettings.Font.Size = 21;
+  
+  /*
+  lblAd = frmCariDetay.AddNewProLabel(pnlCDBTKart, 'lblAd', 'cari ad');
+  lblAd.Align = altop;
+  lblAd.Height =pnlCDBTKart.Height*11/100;
+  lblAd.clProSettings.FontSize = 24;
+  lblAd.clProSettings.FontVertAlign = palcenter;
+  lblAd.clProSettings.FontHorzAlign = palcenter;
+  lblAd.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lblAd.SetclProSettings(lblAd.clProSettings);
+  */
+  
+  pnlMemoAdres = frmCariDetay.AddNewProPanel(pnlCDBTKart,'pnlMemoAdres');
+  clComponent.SetupComponent(pnlMemoAdres,'{"Align" : "top"}');
+  pnlMemoAdres.Height = pnlCDBTKart.Height*13/100;
+  
+  memoAdres = frmCariDetay.AddNewMemo(pnlMemoAdres,'memoAdres','');
+  memoAdres.Align = alcenter;
+  memoAdres.width = pnlMemoAdres.width*90/100;
+  memoAdres.Height = pnlMemoAdres.Height*100/100;
+  memoAdres.ReadOnly = True;
+  memoAdres.TextSettings.WordWrap = True;
+  memoAdres.StyledSettings = ssFamily;
+  memoAdres.TextSettings.Font.Size = 15;
+  
+  
+  pnlCDBTKartMain = frmCariDetay.AddNewProPanel(pnlCDBTKart,'pnlCDBTKartMain');
+  clComponent.SetupComponent(pnlCDBTKart,'{"Align" : "center","BackgroundColor":"#ffffff"}');
+  pnlCDBTKartMain.width = pnlCDBTKart.width*90/100;
+  pnlCDBTKartMain.Height = pnlCDBTKart.Height*32/100;
+  pnlCDBTKartMain.clProSettings.IsRound = True;
+	pnlCDBTKartMain.clProSettings.RoundWidth = 5;
+	pnlCDBTKartMain.clProSettings.RoundHeight = 5;
+  pnlCDBTKartMain.clProSettings.BorderWidth = 2;
+  pnlCDBTKartMain.clProSettings.BorderColor = clAlphaColor.clHexToColor('#212121');
+	pnlCDBTKartMain.SetclProSettings(pnlCDBTKartMain.clProSettings);
+    
+    
+  
+  pnlCDBTKartLeft = frmCariDetay.AddNewProPanel(pnlCDBTKartMain,'pnlCDBTKartLeft');
+  clComponent.SetupComponent(pnlCDBTKartLeft,'{"Align" : "left"}');
+  pnlCDBTKartLeft.width = pnlCDBTKart.width *34/100;
+  {
+    carI_TELEFON = frmCariDetay.AddNewProLabel(pnlCDBTKartLeft, 'carI_TELEFON', 'Telefon');
+    carI_TELEFON.Align = altop;
+    carI_TELEFON.Height =pnlCDBTKartLeft.Height*19/100;
+    carI_TELEFON.clProSettings.FontSize = 15;
+    carI_TELEFON.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    carI_TELEFON.clProSettings.FontVertAlign = palcenter;
+    carI_TELEFON.clProSettings.FontHorzAlign = palcenter;
+    carI_TELEFON.SetclProSettings(carI_TELEFON.clProSettings);
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartLeft,'pnlCizgi4');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    carI_EPOSTA = frmCariDetay.AddNewProLabel(pnlCDBTKartLeft, 'carI_EPOSTA', 'E-posta');
+    carI_EPOSTA.Align = altop;
+    carI_EPOSTA.Height =pnlCDBTKartLeft.Height*19/100;
+    carI_EPOSTA.SetclProSettings(carI_TELEFON.clProSettings);
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartLeft,'pnlCizgi5');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    borC_TOPLAM = frmCariDetay.AddNewProLabel(pnlCDBTKartLeft, 'borC_TOPLAM', 'Borc');
+    borC_TOPLAM.Align = altop;
+    borC_TOPLAM.Height =pnlCDBTKartLeft.Height*19/100;
+    borC_TOPLAM.SetclProSettings(carI_TELEFON.clProSettings);
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartLeft,'pnlCizgi7');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    alacaK_TOPLAM = frmCariDetay.AddNewProLabel(pnlCDBTKartLeft, 'alacaK_TOPLAM', 'Alacak');
+    alacaK_TOPLAM.Align = altop;
+    alacaK_TOPLAM.Height = pnlCDBTKartLeft.Height*19/100;
+    alacaK_TOPLAM.SetclProSettings(carI_TELEFON.clProSettings);
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartLeft,'pnlCizgi8');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    bakiyet = frmCariDetay.AddNewProLabel(pnlCDBTKartLeft, 'bakiyet', 'Borc tip');
+    bakiyet.Align = altop;
+    bakiyet.Height = pnlCDBTKartLeft.Height*19/100;
+    bakiyet.SetclProSettings(carI_TELEFON.clProSettings);
+  }
+  
+  
+  pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartMain,'pnlCizgi000');
+  clComponent.SetupComponent(pnlCizgi,'{"Align" : "left","BackgroundColor":"#000000"}');
+  pnlCizgi.width=pnlCDBTKart.width*5/1000;
+  
+  pnlCDBTKartRight = frmCariDetay.AddNewProPanel(pnlCDBTKartMain,'pnlCDBTKartRight');
+  clComponent.SetupComponent(pnlCDBTKartRight,'{"Align" : "left"}');
+  pnlCDBTKartRight.width = pnlCDBTKartMain.width *61/100;
+  {
+    
+    lblCDTelefon = frmCariDetay.AddNewProLabel(pnlCDBTKartRight, 'lblCDTelefon', 'test1');
+    lblCDTelefon.Align = altop;
+    lblCDTelefon.Height =pnlCDBTKartRight.Height*19/100;
+    lblCDTelefon.clProSettings.FontSize = 11;
+    lblCDTelefon.clProSettings.FontVertAlign = palcenter;
+    lblCDTelefon.clProSettings.FontHorzAlign = palcenter;
+    lblCDTelefon.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblCDTelefon.SetclProSettings(lblCDTelefon.clProSettings);
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartRight,'pnlCizgi10');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblCDEpposta = frmCariDetay.AddNewProLabel(pnlCDBTKartRight, 'lblCDEpposta', 'test2');
+    lblCDEpposta.Align = altop;
+    lblCDEpposta.Height =pnlCDBTKartRight.Height*19/100;
+    lblCDEpposta.SetclProSettings(lblCDTelefon.clProSettings);
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartRight,'pnlCizgi11');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblCDBorc = frmCariDetay.AddNewProLabel(pnlCDBTKartRight, 'lblCDBorc', 'test3');
+    lblCDBorc.Align = altop;
+    lblCDBorc.Height =pnlCDBTKartRight.Height*19/100;
+    lblCDBorc.SetclProSettings(lblCDTelefon.clProSettings);
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartRight,'pnlCizgi13');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblCDAlacak = frmCariDetay.AddNewProLabel(pnlCDBTKartRight, 'lblCDAlacak', 'test3');
+    lblCDAlacak.Align = altop;
+    lblCDAlacak.Height = pnlCDBTKartRight.Height*19/100;
+    lblCDAlacak.SetclProSettings(lblCDTelefon.clProSettings);
+    
+    
+    pnlCizgi=frmCariDetay.AddNewProPanel(pnlCDBTKartRight,'pnlCizgi1341');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlCDBTKart.Height*2/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblBakiyet = frmCariDetay.AddNewProLabel(pnlCDBTKartRight, 'lblBakiyet', 'test3');
+    lblBakiyet.Align = altop;
+    lblBakiyet.Height = pnlCDBTKartRight.Height*19/100;
+    lblBakiyet.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblBakiyet.clProSettings.FontSize = 18;
+    lblBakiyet.clProSettings.FontVertAlign = palcenter;
+    lblBakiyet.clProSettings.FontHorzAlign = palcenter;
+    lblBakiyet.SetclProSettings(lblBakiyet.clProSettings);
+  }
+    
+    try
+      kartRest.BaseURL = Zcontents.getCariSB;
+      kartRest.Accept = 'application/json';
+      kartRest.Method = rmPOST;
+      if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+        kartRest.AddBody('{"databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'"}','application/json');//!!!!!!cari kod almayi unutma
+      else
+        kartRest.AddBody('{"databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'"}','application/json');
+      kartRest.Execute;
+      
+      kartJSONObject = Clomosy.ClDataSetFromJSON(kartRest.Response);
+      
+      if(kartJSONObject.Found)
+      {
+        kartStrJsonData = ''; // JSON verisini baslatiyoruz
+        Sbcounter = 0; // Sayaç baslatiyoruz
+       
+        while (not kartJSONObject.Eof)
+        {
+          // JSON ögesini ekliyoruz
+          if ( kartJSONObject.FieldByName('carI_KODU').AsString == lstCariRehber.clSelectedItemData(clText1) )
+          {
+            lblKod.text = kartJSONObject.FieldByName('carI_KODU').AsString;
+            
+            //lblAd.text = kartJSONObject.FieldByName('carI_ADI').AsString;
+            memoCAD.lines.add(kartJSONObject.FieldByName('carI_ADI').AsString)
+            
+            lblCDTelefon.text = kartJSONObject.FieldByName('carI_TELEFON').AsString;
+            lblCDEpposta.text = kartJSONObject.FieldByName('carI_EPOSTA').AsString;
+            
+            memoAdres.lines.add(kartJSONObject.FieldByName('carI_ADRES').AsString+'/'+
+                                kartJSONObject.FieldByName('carI_ILCE').AsString+'/'+
+                                kartJSONObject.FieldByName('carI_IL').AsString+'/'+
+                                kartJSONObject.FieldByName('carI_ULKE').AsString);
+            
+            lblCDBorc.text = kartJSONObject.FieldByName('borC_TOPLAM').AsString;
+            lblCDAlacak.text = kartJSONObject.FieldByName('alacaK_TOPLAM').AsString;
+            lblBakiyet.text = kartJSONObject.FieldByName('bakiyet').AsString;
+            if(lblBakiyet.text=='B')
+            {
+              lblBakiyet.clProSettings.FontColor = clAlphaColor.clHexToColor('#d60510');
+              lblBakiyet.SetclProSettings(lblBakiyet.clProSettings);
+            }
+            else if(lblBakiyet.text=='A')
+            {
+              lblBakiyet.clProSettings.FontColor = clAlphaColor.clHexToColor('#39d570');
+              lblBakiyet.SetclProSettings(lblBakiyet.clProSettings);
+            }
+            else
+              lblBakiyet.text=lblBakiyet.text;
+              
+            break;
+          }
+          kartJSONObject.Next; // Sonraki ögeye geç
+        }
+      }
+      else
+        ShowMessage('cari kart bulunamadi');
+    except
+      ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0042: ' +LastExceptionMessage);
+    }
+    
+  }
+  frmCariDetay.AddNewEvent(lblCDKart,tbeOnClick,'clickKart');
+  frmCariDetay.AddNewEvent(imgCDKart,tbeOnClick,'clickKart');
+  
+  frmCariDetay.AddNewEvent(lblCDHareket,tbeOnClick,'clickHareket');
+  frmCariDetay.AddNewEvent(imgCDHareket,tbeOnClick,'clickHareket');
+  
+  frmCariDetay.run;
+}
+
+
+void setRehber;
+var 
+  i : Integer;
+  rehberRest : TCLRest;
+  rehberJSONDetailObject : TCLJSONQuery;
+  rehberStrJsonData : String;
+  
+{
+  try
+    rehberRest=TCLRest.Create;
+    rehberRest.BaseURL = Zcontents.getCariRehber;
+    rehberRest.Accept = 'application/json';
+    rehberRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      rehberRest.AddBody('{"databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'","gelen":"'+edtGelen.text+'"}','application/json');//!!!!!!cari kod almayi unutma
+    else
+      rehberRest.AddBody('{"databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'","gelen":"'+edtGelen.text+'"}','application/json');
+    rehberRest.Execute;
+    
+    rehberJSONDetailObject = Clomosy.ClDataSetFromJSON(rehberRest.Response);
+    
+    if(rehberJSONDetailObject.Found)
+    {
+      rehberStrJsonData = ''; // JSON verisini baslatiyoruz
+      Sbcounter = 0; // Sayaç baslatiyoruz
+     
+      while (not rehberJSONDetailObject.Eof)
+      {
+        // JSON ögesini ekliyoruz
+        if (Sbcounter > 0) 
+          rehberStrJsonData = rehberStrJsonData + ',';
+          
+          rehberStrJsonData = rehberStrJsonData + 
+          '{
+            "rehberAd": "'   + rehberJSONDetailObject.FieldByName('carI_ADI').AsString + '",' +
+            '"rehberKod": "'  + rehberJSONDetailObject.FieldByName('carI_KODU').AsString+'",'+
+            '"rehberAdres": "'  + rehberJSONDetailObject.FieldByName('carI_ULKE').AsString+'-'+rehberJSONDetailObject.FieldByName('carI_IL').AsString+'-'+rehberJSONDetailObject.FieldByName('carI_ILCE').AsString + '",' +
+            '"rehberTel": "'    + rehberJSONDetailObject.FieldByName('carI_TELEFON').AsString + '"'+
+            '}';
+        rehberJSONDetailObject.Next; // Sonraki ögeye geç
+        
+        Sbcounter = Sbcounter + 1; // Sayaç artiriyoruz
+      }
+      // JSON dizisinin kapanisi
+      rehberStrJsonData = '[' + rehberStrJsonData + ']';
+     
+      // PPListView'i JSON verisi ile dolduruyoruz
+      
+      lstCariRehber.clLoadProListViewDataFromDataset(Clomosy.ClDataSetFromJSON(rehberStrJsonData));
+    }
+    else
+      ShowMessage('cari SABIT bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0043: ' +LastExceptionMessage);
+  }
+  FrmGiris.AddNewEvent(lstCariRehber,tbeOnItemClick,'setPanels');
+}
+
+void zamanlayiciTetikle;
+{
+ clDoClick(btnGetir);
+ zamanlayici.Enabled = False;
+}
+
+void deneme;
+{
+  ShowMessage('dememe');
+}
+
+
+{
+  FrmGiris=TCLForm.Create(Self);
+  //ShowMessage(ZmainMenu.deneme);
+  Zcontents.setApis;
+  sbRest=TCLRest.Create;
+  
+  /*zamanlayici= FrmGiris.AddNewTimer(FrmGiris,'zamanlayici',1000);
+  zamanlayici.Enabled = True;
+  FrmGiris.AddNewEvent(zamanlayici,tbeOnTimer,'zamanlayiciTetikle');*/
+  
+  pnlCariGiris  =  FrmGiris.AddNewProPanel(FrmGiris,'pnlCariGiris');
+  clComponent.SetupComponent(pnlCariGiris,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+  {
+    lstCariRehber = FrmGiris.AddNewProListView(pnlCariGiris,'lstCariRehber');
+    lstCariRehber.Align = alcenter;
+    lstCariRehber.Height =  pnlCariGiris.Height*85/100;
+    lstCariRehber.Width =   pnlCariGiris.Width *95/100;
+    lstCariRehber.Margins.Bottom = pnlCariGiris.Height*3/100;
+    lstCariRehber.Margins.Top = pnlCariGiris.Height*15/100;
+    lstCariRehber.clProSettings.ViewType = lvWaterFall; //(lvList, lvIcon, lvWaterFall)
+    lstCariRehber.clProSettings.ColCount = 1;
+    lstCariRehber.clProSettings.ItemHeight = lstCariRehber.Height*18/100;  //designer panel büyüklügü
+    lstCariRehber.clProSettings.ItemSpace = lstCariRehber.Height*2/100;
+    lstCariRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFCFF');
+    lstCariRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    lstCariRehber.clProSettings.BorderWidth = 2;
+    lstCariRehber.clProSettings.RoundHeight = 5;
+    lstCariRehber.clProSettings.RoundWidth = 5;
+    lstCariRehber.SetclProSettings(lstCariRehber.clProSettings);
+    
+    edtGelen=FrmGiris.AddNewProEdit(pnlCariGiris,'edtGelen', 'Cari kod veya Ad giriniz...');
+    edtGelen.Align = alcenter;
+    edtGelen.Margins.Right = pnlCariGiris.Width*40/100;
+    edtGelen.Margins.Bottom = pnlCariGiris.Height*85/100;
+    edtGelen.Height = pnlCariGiris.Height*8/100;
+    edtGelen.Width = pnlCariGiris.Width*55/100;
+    edtGelen.clProSettings.BorderWidth=1;
+    edtGelen.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    edtGelen.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    edtGelen.clProSettings.Istransparent = False;
+    edtGelen.clProSettings.IsFill = False; 
+    edtGelen.clProSettings.RoundHeight = 10;
+    edtGelen.clProSettings.RoundWidth = 10;
+    edtGelen.SetclProSettings(edtGelen.clProSettings);
+    
+    btnGetir  = FrmGiris.AddNewpROButton(pnlCariGiris,'btnGetir', 'GETIR');
+    btnGetir.Align = alcenter;
+    btnGetir.Margins.left = pnlCariGiris.Width*50/100;
+    btnGetir.Margins.Bottom = pnlCariGiris.Height*85/100;
+    btnGetir.Height = pnlCariGiris.Height*8/100;
+    btnGetir.Width = pnlCariGiris.Width*30/100;
+    btnGetir.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+    btnGetir.clProSettings.RoundHeight = 10;
+    btnGetir.clProSettings.RoundWidth = 10;
+    btnGetir.clProSettings.BorderWidth = 1;
+    btnGetir.clProSettings.TextSettings.Font.Style = [fsBold];
+    btnGetir.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    btnGetir.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    btnGetir.SetclProSettings(btnGetir.clProSettings);
+    btnGetir.Visible = True;
+    
+    DesignerPanelRehber        = FrmGiris.AddNewProListViewDesignerPanel(lstCariRehber, 'DesignerPanelRehber');
+    DesignerPanelRehber.Align  = alMostTop;
+    DesignerPanelRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#b3fce5');
+    DesignerPanelRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+    DesignerPanelRehber.clProSettings.BorderWidth = 2;
+    DesignerPanelRehber.clProSettings.RoundHeight = 20;
+    DesignerPanelRehber.clProSettings.RoundWidth = 20;
+    DesignerPanelRehber.SetclProSettings(DesignerPanelRehber.clProSettings);
+    
+    lstCariRehber.SetDesignerPanel(DesignerPanelRehber);
+    
+    
+    rehberAd = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberAd', 'cari kod');
+    rehberAd.Align = altop;
+    rehberAd.Height =lstCariRehber.Height*4/100;
+    rehberAd.Margins.Top = lstCariRehber.Height*2/100;
+    rehberAd.Margins.Right = 10;
+    rehberAd.Margins.Left = 10;
+    rehberAd.clProSettings.FontSize = 16;
+    rehberAd.SetclProSettings(rehberAd.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberAd, clText);
+    
+    rehberKod = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberKod', 'cari ad');
+    rehberKod.Align = altop;
+    rehberKod.Height =lstCariRehber.Height*4/100;
+    rehberKod.Margins.Right = 10;
+    rehberKod.Margins.Left = 10;
+    rehberKod.clProSettings.FontSize = 14;
+    rehberKod.SetclProSettings(rehberKod.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberKod, clText1);
+    
+    rehberAdres = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberAdres', 'cari ad');
+    rehberAdres.Align = altop;
+    rehberAdres.Height =lstCariRehber.Height*4/100;
+    rehberAdres.Margins.Right = 10;
+    rehberAdres.Margins.Left = 10;
+    rehberAdres.clProSettings.FontSize = 12;
+    rehberAdres.SetclProSettings(rehberAdres.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberAdres, clText2);
+  
+    rehberTel = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberTel', 'test1');
+    rehberTel.Align = altop;
+    rehberTel.Height =lstCariRehber.Height*4/100;
+    rehberTel.Margins.Right = 10;
+    rehberTel.Margins.Left = 10;
+    rehberTel.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    rehberTel.clProSettings.FontSize = 12;
+    DesignerPanelRehber.AddPanelObject(rehberTel, clText3);
+  }
+  
+  
+  FrmGiris.AddNewEvent(btnGetir,tbeOnClick,'setRehber');
+  
+  FrmGiris.run;
+}

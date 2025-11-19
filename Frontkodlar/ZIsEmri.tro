@@ -1,0 +1,884 @@
+uses Zcontents;
+var
+  frmStokDetay : TCLForm;
+  pnlSDMain,pnlSDTop,pnlSDKart,pnlSDHareket  : TclProPanel;
+  pnlSDBottom,pnlSDBTKart,pnlSDBTHareket,pnlSDBTKartMain,pnlReceteGiris: TclProPanel;
+  imgSDKart,imgSDHareket : TCLImage;
+  lblSDKart,lblSDHareket  : TClProLabel;
+  pListStokDetay : TClProListView;
+  DesignerPanelStokDetay : TClProListViewDesignerPanel;
+  lblAd,lblKod,
+  lblSDMarka,lblSDUstGrup,lblSDGrup,lblSDAltGrup,lblSDBakiye,
+  lblRed,lblKalan,lblBelgeNo,lblEvrakNo,lblSiparisTarih,lblCariKod,lblTeslimTarih,lblPlasiyerAd,
+  isemrI_STOK_KODU,isemrI_STOK_ADI,isemrI_MIKTAR,kabul,bakiye,
+  red,kalan,sipariS_BELGE_NO,sipariS_EVRAK_NO,sipariS_TARIH,sipariS_CARI_ADI,sipariS_CARI_KOD,isemrI_TESLIM_TARIHI,dddd,iE_PLASIYER_ADI: TClProLabel;
+  JSONObject: TCLJSONQuery;
+  memoCAD : TCLMemo;
+  
+  strStokHareketJson  : String;
+  grdHareket: TCLStringGrid;
+  btnGetir  : TClProButton;
+  
+  sbStrJsonData: string;  // JSON verisini tutacagiz
+  Sbcounter: Integer;
+  sbJSONDetailObject: TCLJSONQuery;
+  
+  lstStokRehber : TClProListView;
+
+  zamanlayici: TClTimer;
+
+
+  FrmGiris : TCLForm;
+  pnlStokGiris  : TclProPanel;
+  searchEdtRehber : TClProSearchEdit;
+  rehberAd,rehberKod,rehberAciklama,rehberDepo  : TClProLabel;
+  DesignerPanelRehber : TClProListViewDesignerPanel;
+  sbRest,hrRest  : TCLRest;
+  countLbl,heightLbl : Integer;
+  
+  pnlSDBTKartLeft,pnlSDBTKartRight,pnlCizgi,pnlMemoCAd  : TclProPanel;
+  labelLengh,cizgiLengh : Real;
+
+void modifyHareketGrid;//hareket grid görünüm güncelleme
+var
+  rowLenght,i,j  : Integer;
+{
+  rowLenght=0;
+  i=0;
+  j=0;
+  try
+    while(j <> grdHareket.ColumnCount )
+    {
+      while(i <> grdHareket.RowCount )
+      {
+        if(Length(grdHareket.Cells[j,i])  > rowLenght)
+        {
+          rowLenght=Length(grdHareket.Cells[j,i]);
+        }
+        Inc(i);
+      }
+      if(rowLenght<11)
+        rowLenght=10;
+      grdHareket.Columns[j].Width = frmStokDetay.clwidth*11*rowLenght/1000*3;
+      rowLenght=0;
+      i=0;
+      Inc(j);
+    }
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message361: ' +LastExceptionMessage);
+  }
+}
+
+
+void setHareketGrid;//+ // listviewe tiklandiktan sonra stok harekletlerini gride set ediyoruz 
+Var
+  hrRest  : TCLRest;
+  hrJSONObject: TCLJSONQuery;
+{
+  hrRest=TCLRest.Create;
+  try
+    hrRest.BaseURL = Zcontents.getIsEmriHR  ;
+    hrRest.Accept = 'application/json';
+    hrRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+    {
+      hrRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+        '"detayTur":"2"'+','+
+        '"sipBelgeNo":"'+lstStokRehber.clSelectedItemData(clText1)+
+        '"}','application/json');//!!!!!!Recete kod almayi unutma
+    }
+    else
+    {
+      hrRest.AddBody('{
+      "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+        '"detayTur":"2"'+','+
+        '"sipBelgeNo":"'+lstStokRehber.clSelectedItemData(clText1)+
+        '"}','application/json');//!!!!!!Recete kod almayi unutma
+    }
+    hrRest.Execute;
+    
+    hrJSONObject = Clomosy.ClDataSetFromJSON(hrRest.Response);
+    
+    if(hrJSONObject.Found)
+    {
+      frmStokDetay.RemoveGridBinding('mylink'); 
+      frmStokDetay.AddNewGridBinding(grdHareket,hrJSONObject, 'mylink');
+      modifyHareketGrid;
+    }
+    else
+      ShowMessage('is emri hareket bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message00411: ' +LastExceptionMessage);
+  }
+  modifyHareketGrid;
+}
+
+void clickKart;
+{
+  pnlSDBTKart.visible     = True;
+  pnlSDBTHareket.visible  = False;
+  
+  clComponent.SetupComponent(pnlSDKart,'{"BackgroundColor":"#6ffbf2"}');
+  clComponent.SetupComponent(pnlSDHareket,'{"BackgroundColor":"#c0eeba"}');
+}
+
+void clickHareket;
+{
+  pnlSDBTKart.visible     = False;
+  pnlSDBTHareket.visible  = True;
+  
+  clComponent.SetupComponent(pnlSDKart,'{"BackgroundColor":"#c0eeba"}');
+  clComponent.SetupComponent(pnlSDHareket,'{"BackgroundColor":"#6ffbf2"}');
+  
+  setHareketGrid;
+}
+
+void setPanels;
+var
+  kartRest  : TCLRest;
+  kartJSONObject: TCLJSONQuery;
+  kartStrJsonData : String;
+{
+  //ShowMessage(lstStokRehber.clSelectedItemData(clText1));
+  frmStokDetay  = TCLForm.Create(Self);
+  kartRest  = TCLRest.Create;
+  
+  pnlSDMain = frmStokDetay.AddNewProPanel(frmStokDetay,'pnlSDMain');
+  clComponent.SetupComponent(pnlSDMain,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+    
+  
+  //üst panel
+  pnlSDTop = frmStokDetay.AddNewProPanel(pnlSDMain,'pnlSDTop');
+  clComponent.SetupComponent(pnlSDTop,'{"Align" : "top","BackgroundColor":"#c0eeba"}');
+  pnlSDTop.height= pnlSDMain.height *12/100;
+  
+  {//üst panel içerikleri
+    pnlSDKart = frmStokDetay.AddNewProPanel(pnlSDTop,'pnlSDKart');
+    clComponent.SetupComponent(pnlSDKart,'{"Align" : "left","BackgroundColor":"#6ffbf2"}');
+    pnlSDKart.width = pnlSDTop.width  *50/100;
+    {
+      imgSDKart = frmStokDetay.AddNewImage(pnlSDKart,'imgSDKart');
+      imgSDKart.Align = alCenter;
+      imgSDKart.Height =  pnlSDKart.Height*45/100;
+      imgSDKart.Width =   pnlSDKart.Height*45/100;
+      imgSDKart.Margins.bottom  = pnlSDKart.Height*25/100;
+      frmStokDetay.setImage(imgSDKart,'https://cdn-icons-png.freepik.com/512/16870/16870828.png');
+      
+      lblSDKart = frmStokDetay.AddNewProLabel(pnlSDKart, 'lblSDKart', 'stok Kart');
+      lblSDKart.Align = alCenter;
+      lblSDKart.Height =  pnlSDKart.Height*25/100;
+      lblSDKart.Width =   pnlSDKart.Width *60/100;
+      lblSDKart.Margins.top  = pnlSDKart.Height*40/100;
+      lblSDKart.clProSettings.FontSize = 16;
+      lblSDKart.clProSettings.FontHorzAlign=palCenter;
+      lblSDKart.clProSettings.FontVertAlign=palCenter;
+      lblSDKart.SetclProSettings(lblSDKart.clProSettings);
+    }
+  
+    
+    pnlSDHareket = frmStokDetay.AddNewProPanel(pnlSDTop,'pnlSDHareket');
+    clComponent.SetupComponent(pnlSDHareket,'{"Align" : "right","BackgroundColor":"#c0eeba"}');
+    pnlSDHareket.width = pnlSDTop.width  *50/100;
+    pnlSDHareket.height= pnlSDTop.height *100/100;
+    {
+      imgSDHareket = frmStokDetay.AddNewImage(pnlSDHareket,'imgSDHareket');
+      imgSDHareket.Align = alCenter;
+      imgSDHareket.Height =  pnlSDHareket.Height*45/100;
+      imgSDHareket.Width =   pnlSDHareket.Height*45/100;
+      imgSDHareket.Margins.bottom  = pnlSDHareket.Height*30/100;
+      frmStokDetay.setImage(imgSDHareket,'https://cdn-icons-png.freepik.com/512/1600/1600000.png');
+      
+      lblSDHareket = frmStokDetay.AddNewProLabel(pnlSDHareket, 'lblSDHareket', 'Hareketler');
+      lblSDHareket.Align = alCenter;
+      lblSDHareket.Height =  pnlSDHareket.Height*25/100;
+      lblSDHareket.Width =   pnlSDHareket.Width *60/100;
+      lblSDHareket.Margins.top  = pnlSDHareket.Height*40/100;
+      lblSDHareket.SetclProSettings(lblSDKart.clProSettings);
+    }
+  }
+  
+  //alt panel
+  pnlSDBottom = frmStokDetay.AddNewProPanel(pnlSDMain,'pnlSDBottom');
+  clComponent.SetupComponent(pnlSDBottom,'{"Align" : "bottom","BackgroundColor":"#ffffff"}');
+  pnlSDBottom.height = pnlSDMain.height *85/100;
+  
+  {
+    //stokKart panel
+    pnlSDBTKart = frmStokDetay.AddNewProPanel(pnlSDBottom,'pnlSDBTKart');
+    clComponent.SetupComponent(pnlSDBTKart,'{"Align" : "bottom","BackgroundColor":"#b3c9ff"}');
+    pnlSDBTKart.height = pnlSDBottom.height *95/100;
+    pnlSDBTKart.visible = true;
+    {
+      
+    }
+    
+    //hareket panel
+    pnlSDBTHareket = frmStokDetay.AddNewProPanel(pnlSDBottom,'pnlSDBTHareket');
+    clComponent.SetupComponent(pnlSDBTHareket,'{"Align" : "bottom"}');
+    pnlSDBTHareket.height = pnlSDBottom.height *95/100;
+    pnlSDBTHareket.visible = false;
+    
+    {//hareket grid
+      grdHareket = frmStokDetay.AddNewStringGrid(pnlSDBTHareket, 'grdHareket');
+      grdHareket.Align = alcenter;
+      grdHareket.Width  = pnlSDBTHareket.Width*95/100;
+      grdHareket.height = pnlSDBTHareket.height*95/100;
+      grdHareket.ReadOnly = TRUE;
+      //grdHareket.RotationAngle = 90;
+      //grdHareket.Align = alcenter;
+      //grdHareket.Width  = pnlSDBTHareket.height;
+      //grdHareket.height = pnlSDBTHareket.Width;
+      
+      //frmStokDetay.AddNewEvent(grdHareket,tbeOnProGridCellClick,'getDetailForm');
+    }
+    
+    
+    
+  
+    
+  lblKod = frmStokDetay.AddNewProLabel(pnlSDBTKart, 'lblKod', 'stok kod');
+  lblKod.Align = altop;
+  lblKod.Height =pnlSDBTKart.Height*4/100;
+  lblKod.clProSettings.FontSize = 15;
+  lblKod.clProSettings.FontVertAlign = palcenter;
+  lblKod.clProSettings.FontHorzAlign = palcenter;
+  lblKod.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lblKod.margins.top  = pnlSDBTKart.Height*4/100;
+  lblKod.SetclProSettings(lblKod.clProSettings);
+  
+  
+  
+  pnlMemoCAd = frmStokDetay.AddNewProPanel(pnlSDBTKart,'pnlMemoCAd');
+  clComponent.SetupComponent(pnlMemoCAd,'{"Align" : "top"}');
+  pnlMemoCAd.Height = pnlSDBTKart.Height*12/100;
+  
+  memoCAD = frmStokDetay.AddNewMemo(pnlMemoCAd,'memoCAD','');
+  memoCAD.Align = alcenter;
+  memoCAD.width = pnlMemoCAd.width*90/100;
+  memoCAD.Height = pnlMemoCAd.Height*100/100;
+  memoCAD.ReadOnly = True;
+  memoCAD.TextSettings.WordWrap = True;
+  memoCAD.StyledSettings = ssFamily;
+  memoCAD.TextSettings.Font.Size = 19;
+  
+  /*
+  lblAd = frmStokDetay.AddNewProLabel(pnlSDBTKart, 'lblAd', 'stok ad');
+  lblAd.Align = altop;
+  lblAd.Height =pnlSDBTKart.Height*11/100;
+  lblAd.clProSettings.FontSize = 24;
+  lblAd.clProSettings.FontVertAlign = palcenter;
+  lblAd.clProSettings.FontHorzAlign = palcenter;
+  lblAd.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  lblAd.SetclProSettings(lblAd.clProSettings);
+  */
+  
+  
+  countLbl  = 13;//11
+  heightLbl = (((100-((countLbl-1)*2)))/countLbl);
+  
+  pnlSDBTKartMain = frmStokDetay.AddNewProPanel(pnlSDBTKart,'pnlSDBTKartMain');
+  clComponent.SetupComponent(pnlSDBTKart,'{"Align" : "center","BackgroundColor":"#ffffff"}');
+  pnlSDBTKartMain.width = pnlSDBTKart.width*90/100;
+  pnlSDBTKartMain.Height = pnlSDBTKart.Height*countLbl*5/100;
+  pnlSDBTKartMain.clProSettings.IsRound = True;
+	pnlSDBTKartMain.clProSettings.RoundWidth = 5;
+	pnlSDBTKartMain.clProSettings.RoundHeight = 5;
+  pnlSDBTKartMain.clProSettings.BorderWidth = 2;
+  pnlSDBTKartMain.clProSettings.BorderColor = clAlphaColor.clHexToColor('#212121');
+	pnlSDBTKartMain.SetclProSettings(pnlSDBTKartMain.clProSettings);
+  
+  
+  
+  
+  pnlSDBTKartLeft = frmStokDetay.AddNewProPanel(pnlSDBTKartMain,'pnlSDBTKartLeft');
+  clComponent.SetupComponent(pnlSDBTKartLeft,'{"Align" : "left"}');
+  pnlSDBTKartLeft.width = pnlSDBTKart.width *34/100;
+  
+  
+  labelLengh=pnlSDBTKartLeft.Height*heightLbl/100;
+  cizgiLengh=pnlSDBTKart.Height*3/1000;
+  {
+    isemrI_STOK_KODU = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'isemrI_STOK_KODU', 'Ürün kodu');
+    isemrI_STOK_KODU.Align = altop;
+    isemrI_STOK_KODU.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    isemrI_STOK_KODU.clProSettings.FontSize = 17;
+    isemrI_STOK_KODU.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    isemrI_STOK_KODU.clProSettings.FontVertAlign = palcenter;
+    isemrI_STOK_KODU.clProSettings.FontHorzAlign = palcenter;
+    isemrI_STOK_KODU.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi4');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    isemrI_STOK_ADI = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'isemrI_STOK_ADI', 'Stok adi');
+    isemrI_STOK_ADI.Align = altop;
+    isemrI_STOK_ADI.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    isemrI_STOK_ADI.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi5');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    isemrI_MIKTAR = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'isemrI_MIKTAR', 'Miktar');
+    isemrI_MIKTAR.Align = altop;
+    isemrI_MIKTAR.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    isemrI_MIKTAR.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi6');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    kabul = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'kabul', 'Kabul');
+    kabul.Align = altop;
+    kabul.Height =pnlSDBTKartLeft.Height*heightLbl/100;
+    kabul.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi7');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    red = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'red', 'Red');
+    red.Align = altop;
+    red.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    red.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi71');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    kalan = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'kalan', 'Kalan');
+    kalan.Align = altop;
+    kalan.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    kalan.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi761');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    iE_PLASIYER_ADI = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'iE_PLASIYER_ADI', 'Plasiyer');
+    iE_PLASIYER_ADI.Align = altop;
+    iE_PLASIYER_ADI.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    iE_PLASIYER_ADI.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi72');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    sipariS_BELGE_NO = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'sipariS_BELGE_NO', 'S.Belge No');
+    sipariS_BELGE_NO.Align = altop;
+    sipariS_BELGE_NO.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    sipariS_BELGE_NO.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi73');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    sipariS_EVRAK_NO = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'sipariS_EVRAK_NO', 'S.Evrak No');
+    sipariS_EVRAK_NO.Align = altop;
+    sipariS_EVRAK_NO.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    sipariS_EVRAK_NO.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi74');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    sipariS_TARIH = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'sipariS_TARIH', 'S.Tarih');
+    sipariS_TARIH.Align = altop;
+    sipariS_TARIH.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    sipariS_TARIH.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi75');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    sipariS_CARI_KOD = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'sipariS_CARI_KOD', 'S.cari kod');
+    sipariS_CARI_KOD.Align = altop;
+    sipariS_CARI_KOD.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    sipariS_CARI_KOD.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi768');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    sipariS_CARI_ADI = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'sipariS_CARI_ADI', 'S.Cari Adi');
+    sipariS_CARI_ADI.Align = altop;
+    sipariS_CARI_ADI.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    sipariS_CARI_ADI.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartLeft,'pnlCizgi769');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    isemrI_TESLIM_TARIHI = frmStokDetay.AddNewProLabel(pnlSDBTKartLeft, 'isemrI_TESLIM_TARIHI', 'Teslim tarihi');
+    isemrI_TESLIM_TARIHI.Align = altop;
+    isemrI_TESLIM_TARIHI.Height = pnlSDBTKartLeft.Height*heightLbl/100;
+    isemrI_TESLIM_TARIHI.SetclProSettings(isemrI_STOK_KODU.clProSettings);
+  }
+  
+  
+  pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartMain,'pnlCizgi000');
+  clComponent.SetupComponent(pnlCizgi,'{"Align" : "left","BackgroundColor":"#000000"}');
+  pnlCizgi.width=pnlSDBTKart.width*5/1000;
+  
+  pnlSDBTKartRight = frmStokDetay.AddNewProPanel(pnlSDBTKartMain,'pnlSDBTKartRight');
+  clComponent.SetupComponent(pnlSDBTKartRight,'{"Align" : "left"}');
+  pnlSDBTKartRight.width = pnlSDBTKartMain.width *61/100;
+  {
+    lblSDMarka = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblSDMarka', 'test1');
+    lblSDMarka.Align = altop;
+    lblSDMarka.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    lblSDMarka.clProSettings.FontSize =11;
+    lblSDMarka.clProSettings.FontVertAlign = palcenter;
+    lblSDMarka.clProSettings.FontHorzAlign = palcenter;
+    lblSDMarka.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    lblSDMarka.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi10');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblSDUstGrup = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblSDUstGrup', 'test2');
+    lblSDUstGrup.Align = altop;
+    lblSDUstGrup.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    lblSDUstGrup.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi11');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblSDGrup = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblSDGrup', 'test3');
+    lblSDGrup.Align = altop;
+    lblSDGrup.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    lblSDGrup.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi12');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblSDAltGrup = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblSDAltGrup', 'test3');
+    lblSDAltGrup.Align = altop;
+    lblSDAltGrup.Height =pnlSDBTKartRight.Height*heightLbl/100;
+    lblSDAltGrup.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi13');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblRed = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblRed', 'lblRed');
+    lblRed.Align = altop;
+    lblRed.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblRed.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi131');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblKalan = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblKalan', 'lblKalan');
+    lblKalan.Align = altop;
+    lblKalan.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblKalan.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi1369');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblPlasiyerAd = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblPlasiyerAd', 'test3');
+    lblPlasiyerAd.Align = altop;
+    lblPlasiyerAd.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblPlasiyerAd.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi132');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblBelgeNo = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblBelgeNo', 'lblBelgeNo');
+    lblBelgeNo.Align = altop;
+    lblBelgeNo.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblBelgeNo.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi133');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblEvrakNo = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblEvrakNo', 'lblEvrakNo');
+    lblEvrakNo.Align = altop;
+    lblEvrakNo.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblEvrakNo.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi134');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblSiparisTarih = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblSiparisTarih', 'lblSiparisTarih');
+    lblSiparisTarih.Align = altop;
+    lblSiparisTarih.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblSiparisTarih.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi1356');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblCariKod = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblCariKod', 'lblCariKod');
+    lblCariKod.Align = altop;
+    lblCariKod.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblCariKod.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi1367');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblSDBakiye = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblSDBakiye', 'test3');
+    lblSDBakiye.Align = altop;
+    lblSDBakiye.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblSDBakiye.SetclProSettings(lblSDMarka.clProSettings);
+    
+    pnlCizgi=frmStokDetay.AddNewProPanel(pnlSDBTKartRight,'pnlCizgi1368');
+    pnlCizgi.Align=alTop;
+    pnlCizgi.Height=pnlSDBTKart.Height*3/1000;
+    pnlCizgi.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#000000');
+    pnlCizgi.SetclProSettings(pnlCizgi.clProSettings);
+    
+    
+    lblTeslimTarih = frmStokDetay.AddNewProLabel(pnlSDBTKartRight, 'lblTeslimTarih', 'test3');
+    lblTeslimTarih.Align = altop;
+    lblTeslimTarih.Height = pnlSDBTKartRight.Height*heightLbl/100;
+    lblTeslimTarih.SetclProSettings(lblSDMarka.clProSettings);
+  }
+   
+  try
+    kartRest.BaseURL = Zcontents.getIsEmriSB;
+    kartRest.Accept = 'application/json';
+    kartRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      kartRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+        '"detayTur":"1"'+','+
+        '"sipBelgeNo":""'+
+        '}','application/json');
+    else
+      kartRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+        '"detayTur":"1"'+','+
+        '"sipBelgeNo":""'+
+        '}','application/json');
+    kartRest.Execute;
+    
+    kartJSONObject = Clomosy.ClDataSetFromJSON(kartRest.Response);
+    
+    if(kartJSONObject.Found)
+    {
+      kartStrJsonData = ''; // JSON verisini baslatiyoruz
+      Sbcounter = 0; // Sayaç baslatiyoruz
+     
+      while (not kartJSONObject.Eof)
+      {
+        // JSON ögesini ekliyoruz
+        if ( kartJSONObject.FieldByName('isemrI_BELGE_NO').AsString == lstStokRehber.clSelectedItemData(clText1) )
+        {
+          lblKod.text = kartJSONObject.FieldByName('isemrI_STOK_KODU').AsString;
+          
+          memoCAD.lines.add(kartJSONObject.FieldByName('isemrI_STOK_ADI').AsString)
+          
+          lblSDMarka.text = kartJSONObject.FieldByName('isemrI_STOK_KODU').AsString;
+          lblSDUstGrup.text = kartJSONObject.FieldByName('isemrI_STOK_ADI').AsString;
+          lblSDGrup.text = kartJSONObject.FieldByName('isemrI_MIKTAR').AsString;
+          lblSDAltGrup.text = kartJSONObject.FieldByName('kabul').AsString;
+          lblRed.text = kartJSONObject.FieldByName('red').AsString;
+          lblKalan.text = kartJSONObject.FieldByName('kalan').AsString;
+          lblPlasiyerAd.text = kartJSONObject.FieldByName('iE_PLASIYER_ADI').AsString;
+          lblBelgeNo.text = kartJSONObject.FieldByName('sipariS_BELGE_NO').AsString;
+          lblEvrakNo.text = kartJSONObject.FieldByName('sipariS_EVRAK_NO').AsString;
+          lblSiparisTarih.text = kartJSONObject.FieldByName('sipariS_TARIH').AsString;
+          lblCariKod.text = kartJSONObject.FieldByName('sipariS_CARI_KOD').AsString;
+          lblSDBakiye.text = kartJSONObject.FieldByName('sipariS_CARI_ADI').AsString;
+          lblTeslimTarih.text = kartJSONObject.FieldByName('isemrI_TESLIM_TARIHI').AsString;
+            
+          break;
+        }
+        kartJSONObject.Next; // Sonraki ögeye geç
+      }
+    }
+    else
+      ShowMessage('is emri kart bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0042: ' +LastExceptionMessage);
+    
+  }
+  
+  frmStokDetay.AddNewEvent(lstStokRehber,tbeOnItemClick,'clickKart');
+    
+  }
+  frmStokDetay.AddNewEvent(lblSDKart,tbeOnClick,'clickKart');
+  frmStokDetay.AddNewEvent(imgSDKart,tbeOnClick,'clickKart');
+  
+  frmStokDetay.AddNewEvent(lblSDHareket,tbeOnClick,'clickHareket');
+  frmStokDetay.AddNewEvent(imgSDHareket,tbeOnClick,'clickHareket');
+  
+  frmStokDetay.run;
+}
+
+
+void setRehber;
+{
+  try
+    sbRest.BaseURL = Zcontents.getIsEmriSB;
+    sbRest.Accept = 'application/json';
+    sbRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      sbRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",'+
+        '"detayTur":"1"'+','+
+        '"sipBelgeNo":""'+
+        '}','application/json');
+    else
+      sbRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",'+
+        '"detayTur":"1"'+','+
+        '"sipBelgeNo":""'+
+        '}','application/json');
+        
+    sbRest.Execute;
+    
+    sbJSONDetailObject = Clomosy.ClDataSetFromJSON(sbRest.Response);
+    
+    if(sbJSONDetailObject.Found)
+    {
+      sbStrJsonData = ''; // JSON verisini baslatiyoruz
+      Sbcounter = 0; // Sayaç baslatiyoruz
+     
+      while (not sbJSONDetailObject.Eof)
+      {
+        // JSON ögesini ekliyoruz
+        if (Sbcounter > 0) 
+          sbStrJsonData = sbStrJsonData + ',';
+          
+        sbStrJsonData = sbStrJsonData + 
+        '{
+          "rehberAd": "'   + sbJSONDetailObject.FieldByName('isemrI_STOK_ADI').AsString + '",' +
+          '"rehberKod": "'  + sbJSONDetailObject.FieldByName('isemrI_BELGE_NO').AsString+'",'+
+          '"rehberAciklama": "'  + sbJSONDetailObject.FieldByName('isemrI_TESLIM_TARIHI').AsString+'",'+
+          '"rehberDepo": "'    + sbJSONDetailObject.FieldByName('isemrI_MIKTAR').AsString +' '+ sbJSONDetailObject.FieldByName('mamuL_OLCU_BR').AsString + '"'+
+          '}';
+        sbJSONDetailObject.Next; // Sonraki ögeye geç
+        
+        Sbcounter = Sbcounter + 1; // Sayaç artiriyoruz
+      }
+      // JSON dizisinin kapanisi
+      sbStrJsonData = '[' + sbStrJsonData + ']';
+     
+      // PPListView'i JSON verisi ile dolduruyoruz
+      
+      btnGetir.Visible  = false;
+      searchEdtRehber.Visible = True;
+      searchEdtRehber.Width = FrmGiris.clWidth*80/100;
+      searchEdtRehber.Margins.Left=0;
+      lstStokRehber.clLoadProListViewDataFromDataset(Clomosy.ClDataSetFromJSON(sbStrJsonData));
+    }
+    else
+      ShowMessage('is emri SABIT bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0043: ' +LastExceptionMessage);
+  }
+  FrmGiris.AddNewEvent(lstStokRehber,tbeOnItemClick,'setPanels');
+}
+
+void zamanlayiciTetikle;
+{
+ clDoClick(btnGetir);
+ zamanlayici.Enabled = False;
+}
+
+void deneme;
+{
+  ShowMessage('dememe');
+}
+
+
+{
+  FrmGiris=TCLForm.Create(Self);
+  //ShowMessage(ZmainMenu.deneme);
+  sbRest=TCLRest.Create;
+  Zcontents.setApis;
+  
+  zamanlayici= FrmGiris.AddNewTimer(FrmGiris,'zamanlayici',1000);
+  zamanlayici.Enabled = True;
+  FrmGiris.AddNewEvent(zamanlayici,tbeOnTimer,'zamanlayiciTetikle');
+  
+  pnlReceteGiris  =  FrmGiris.AddNewProPanel(FrmGiris,'pnlReceteGiris');
+  clComponent.SetupComponent(pnlReceteGiris,'{"Align" : "Client","BackgroundColor":"#ffffff"}');
+  {
+    lstStokRehber = FrmGiris.AddNewProListView(pnlReceteGiris,'lstStokRehber');
+    lstStokRehber.Align = alcenter;
+    lstStokRehber.Height =  pnlReceteGiris.Height*85/100;
+    lstStokRehber.Width =   pnlReceteGiris.Width *95/100;
+    lstStokRehber.Margins.Bottom = pnlReceteGiris.Height*3/100;
+    lstStokRehber.Margins.Top = pnlReceteGiris.Height*15/100;
+    lstStokRehber.clProSettings.ViewType = lvWaterFall; //(lvList, lvIcon, lvWaterFall)
+    lstStokRehber.clProSettings.ColCount = 1;
+    lstStokRehber.clProSettings.ItemHeight = lstStokRehber.Height*18/100;  //designer panel büyüklügü
+    lstStokRehber.clProSettings.ItemSpace = lstStokRehber.Height*2/100;
+    lstStokRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#FFFCFF');
+    lstStokRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    lstStokRehber.clProSettings.BorderWidth = 2;
+    lstStokRehber.clProSettings.RoundHeight = 5;
+    lstStokRehber.clProSettings.RoundWidth = 5;
+    lstStokRehber.SetclProSettings(lstStokRehber.clProSettings);
+    
+    btnGetir  = FrmGiris.AddNewpROButton(pnlReceteGiris,'btnGetir', 'KARTLAR BEKLENIYOR');
+    btnGetir.Align = alcenter;
+    btnGetir.Margins.Bottom = pnlReceteGiris.Height*85/100;
+    btnGetir.Height = pnlReceteGiris.Height*8/100;
+    btnGetir.Width = pnlReceteGiris.Width*45/100;
+    btnGetir.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+    btnGetir.clProSettings.RoundHeight = 10;
+    btnGetir.clProSettings.RoundWidth = 10;
+    btnGetir.clProSettings.BorderWidth = 1;
+    btnGetir.clProSettings.TextSettings.Font.Style = [fsBold];
+    btnGetir.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    btnGetir.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    btnGetir.SetclProSettings(btnGetir.clProSettings);
+    btnGetir.Visible = True;
+    
+    
+    searchEdtRehber = FrmGiris.AddNewProSearchEdit(pnlReceteGiris,'searchEdtRehber','ARAMA YAPINIZ');
+    searchEdtRehber.Align = alcenter;
+    searchEdtRehber.Margins.Bottom = pnlReceteGiris.Height*85/100;
+    searchEdtRehber.Margins.left = pnlReceteGiris.Width*30/100;
+    searchEdtRehber.Height = pnlReceteGiris.Height*8/100;
+    searchEdtRehber.Width = pnlReceteGiris.Width*5/100;
+    searchEdtRehber.TargetListView = lstStokRehber;
+    searchEdtRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+    searchEdtRehber.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    searchEdtRehber.clProSettings.IsRound = True;
+    searchEdtRehber.clProSettings.RoundHeight = 3;
+    searchEdtRehber.clProSettings.RoundWidth = 3;
+    searchEdtRehber.clProSettings.BorderWidth = 1;
+    searchEdtRehber.SetclProSettings(searchEdtRehber.clProSettings);
+    searchEdtRehber.Visible = False;
+    
+    DesignerPanelRehber        = FrmGiris.AddNewProListViewDesignerPanel(lstStokRehber, 'DesignerPanelRehber');
+    DesignerPanelRehber.Align  = alMostTop;
+    DesignerPanelRehber.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#b3fce5');
+    DesignerPanelRehber.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+    DesignerPanelRehber.clProSettings.BorderWidth = 2;
+    DesignerPanelRehber.clProSettings.RoundHeight = 20;
+    DesignerPanelRehber.clProSettings.RoundWidth = 20;
+    DesignerPanelRehber.SetclProSettings(DesignerPanelRehber.clProSettings);
+    
+    lstStokRehber.SetDesignerPanel(DesignerPanelRehber);
+    
+    
+    rehberAd = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberAd', 'Recete kod');
+    rehberAd.Align = altop;
+    rehberAd.Height =lstStokRehber.Height*4/100;
+    rehberAd.Margins.Top = lstStokRehber.Height*2/100;
+    rehberAd.Margins.Right = 10;
+    rehberAd.Margins.Left = 10;
+    rehberAd.clProSettings.FontSize = 16;
+    rehberAd.SetclProSettings(rehberAd.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberAd, clText);
+    
+    rehberKod = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberKod', 'Recete ad');
+    rehberKod.Align = altop;
+    rehberKod.Height =lstStokRehber.Height*4/100;
+    rehberKod.Margins.Right = 10;
+    rehberKod.Margins.Left = 10;
+    rehberKod.clProSettings.FontSize = 14;
+    rehberKod.SetclProSettings(rehberKod.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberKod, clText1);
+    
+    rehberAciklama = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberAciklama', 'Recete Açiklama');
+    rehberAciklama.Align = altop;
+    rehberAciklama.Height =lstStokRehber.Height*4/100;
+    rehberAciklama.Margins.Right = 10;
+    rehberAciklama.Margins.Left = 10;
+    rehberAciklama.clProSettings.FontSize = 12;
+    rehberAciklama.SetclProSettings(rehberAciklama.clProSettings);
+    DesignerPanelRehber.AddPanelObject(rehberAciklama, clText2);
+  
+    rehberDepo = FrmGiris.AddNewProLabel(DesignerPanelRehber, 'rehberDepo', 'test1');
+    rehberDepo.Align = altop;
+    rehberDepo.Height =lstStokRehber.Height*4/100;
+    rehberDepo.Margins.Right = 10;
+    rehberDepo.Margins.Left = 10;
+    rehberDepo.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+    rehberDepo.clProSettings.FontSize = 12;
+    DesignerPanelRehber.AddPanelObject(rehberDepo, clText3);
+  }
+  
+  
+  FrmGiris.AddNewEvent(btnGetir,tbeOnClick,'setRehber');
+  
+  FrmGiris.run;
+}

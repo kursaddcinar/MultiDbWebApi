@@ -1,0 +1,293 @@
+uses Zcontents;
+var
+  Myform,frmSonuc  : TCLForm;
+  pnlMain,pnlGiris,pnlSonuc : TclProPanel;
+  btnMusteriCek,btnBorcCek,btnMusteriSenet,btnBorcSenet,btnSearch : TClProButton;
+  grdHareket  : TCLStringGrid;
+  serialNo  : String;
+  
+  edtSeriNo : TclProEdit;
+
+function BtnOnClick:String; 
+var
+ clickedBtn:TClProButton;
+{
+  clickedBtn = TClProButton(Myform.Clsender); 
+  //ShowMessage(clickedBtn.Caption); //TClProButton(Myform.Clsender).Caption
+  //ShowMessage(clickedBtn.Hint);
+  //clickedBtn.Caption = '+++';
+  Result=clickedBtn.Hint;
+}
+
+void modifyHareketGrid;//hareket grid görünüm güncelleme
+var
+  rowLenght,i,j  : Integer;
+{
+  rowLenght=0;
+  i=0;
+  j=0;
+  try
+    while(j <> grdHareket.ColumnCount )
+    {
+      while(i <> grdHareket.RowCount )
+      {
+        if(Length(grdHareket.Cells[j,i])  > rowLenght)
+        {
+          rowLenght=Length(grdHareket.Cells[j,i]);
+        }
+        Inc(i);
+      }
+      if(rowLenght<11)
+        rowLenght=10;
+      if(rowLenght>20)
+        rowLenght=20;
+      grdHareket.Columns[j].Width = frmSonuc.clwidth*11*rowLenght/1000*3;//pnl_cari_detail.Width*rowLenght/100*15/100;
+      rowLenght=0;
+      i=0;
+      Inc(j);
+    }
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message361: ' +LastExceptionMessage);
+  }
+}
+
+void setSonucForm;
+Var
+  hrRest  : TCLRest;
+  hrJSONObject: TCLJSONQuery;
+  controlSonuc : Integer;
+{
+  frmSonuc  = TCLForm.Create(Self);
+  controlSonuc = 1  ;
+  
+  pnlSonuc=frmSonuc.AddNewProPanel(frmSonuc,'pnlSonuc');
+  pnlSonuc.Align = alcenter;
+  pnlSonuc.Width  = frmSonuc.clWidth*90/100;
+  pnlSonuc.Height = frmSonuc.clHeight*80/100;
+  pnlSonuc.visible  = True;
+  {
+    grdHareket  = frmSonuc.AddNewStringGrid(pnlSonuc, 'grdHareket');
+    grdHareket.Align = alClient;
+  }
+  
+  hrRest=TCLRest.Create;
+  try
+    hrRest.BaseURL = Zcontents.getCekSenet;
+    hrRest.Accept = 'application/json';
+    hrRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      hrRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'",
+        "tur":"'+BtnOnClick+'"
+        }','application/json');//!!!!!!Banka kod almayi unutma
+    else
+      hrRest.AddBody('{
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'",
+        "tur":"'+BtnOnClick+'"
+        }','application/json');//!!!!!!Banka kod almayi unutma
+        
+    hrRest.Execute;
+    
+    hrJSONObject = Clomosy.ClDataSetFromJSON(hrRest.Response);
+    
+    if(hrJSONObject.Found)
+    {
+      frmSonuc.RemoveGridBinding('mylink'); 
+      frmSonuc.AddNewGridBinding(grdHareket,hrJSONObject, 'mylink');
+      
+      
+      if( Pos('Unable', grdHareket.Cells[0, 0] ) > 0  )// 5476376658354031104
+      {
+        ShowMessage('Belge bulunmamaktadir.');
+        controlSonuc = 0;
+        //frmSonuc.close;
+      }
+      else
+      {
+        modifyHareketGrid;
+      }
+    }
+    else
+      ShowMessage('Cek Senet hareket bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message00411: ' +LastExceptionMessage);
+  }
+  //modifyHareketGrid;
+  frmSonuc.run;
+  
+  if(controlSonuc == 0)
+    frmSonuc.close;
+}
+
+void setWithSerialCode;
+Var
+  hrRest  : TCLRest;
+  hrJSONObject: TCLJSONQuery;
+{
+  serialNo=edtSeriNo.text;
+  
+  hrRest=TCLRest.Create;
+  try
+    hrRest.BaseURL = Zcontents.getCekSenetWSerial;
+    hrRest.Accept = 'application/json';
+    hrRest.Method = rmPOST;
+    if( Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17) == 'NULL' )
+      hrRest.AddBody('{
+        "SeriNo":"'+serialNo+'",
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4)+'"
+        }','application/json');//!!!!!!Banka kod almayi unutma
+    else
+      hrRest.AddBody('{
+        "SeriNo":"'+serialNo+'",
+        "databaseName":"'+Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,17)+'"
+        }','application/json');//!!!!!!Banka kod almayi unutma
+        
+    hrRest.Execute;
+    
+    hrJSONObject = Clomosy.ClDataSetFromJSON(hrRest.Response);
+    
+    if(hrJSONObject.Found)
+    {
+      frmSonuc.RemoveGridBinding('mylink'); 
+      frmSonuc.AddNewGridBinding(grdHareket,hrJSONObject, 'mylink');
+      modifyHareketGrid;
+      //modifyHareketGrid;
+    }
+    else
+      ShowMessage('Cek Senet hareket bulunamadi');
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message00411: ' +LastExceptionMessage);
+  }
+}
+
+void setSearchForm;
+Var
+  btnGetir  : TClProButton;
+{
+  frmSonuc  = TCLForm.Create(Self);
+  
+  edtSeriNo = frmSonuc.AddNewProEdit(frmSonuc, 'edtSeriNo', 'Seri no giriniz');
+  edtSeriNo.Align = altop;
+  edtSeriNo.Height=frmSonuc.clHeight*8/100;
+  edtSeriNo.Margins.Right=frmSonuc.clWidth*10/100;
+  edtSeriNo.Margins.Left=frmSonuc.clWidth*10/100;
+  edtSeriNo.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  edtSeriNo.clProSettings.RoundHeight = 10;
+  edtSeriNo.clProSettings.RoundWidth = 10;
+  edtSeriNo.clProSettings.BorderWidth = 1;
+  edtSeriNo.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  edtSeriNo.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+  edtSeriNo.SetclProSettings(edtSeriNo.clProSettings);
+  
+  btnGetir  = frmSonuc.AddNewProButton(frmSonuc, 'btnGetir', 'GETIR');
+  btnGetir.Align = altop;
+  btnGetir.Height=frmSonuc.clHeight*10/100;
+  btnGetir.Margins.Right=frmSonuc.clWidth*15/100;
+  btnGetir.Margins.Left=frmSonuc.clWidth*15/100;
+  btnGetir.Margins.top=frmSonuc.clheight*5/100;
+  btnGetir.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  btnGetir.clProSettings.RoundHeight = 10;
+  btnGetir.clProSettings.RoundWidth = 10;
+  btnGetir.clProSettings.BorderWidth = 1;
+  btnGetir.clProSettings.TextSettings.Font.Style = [fsBold];
+  btnGetir.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  btnGetir.clProSettings.BorderColor = clAlphaColor.clHexToColor('#17d998');
+  btnGetir.SetclProSettings(btnGetir.clProSettings);
+  
+  pnlSonuc=frmSonuc.AddNewProPanel(frmSonuc,'pnlSonuc');
+  pnlSonuc.Align = altop;
+  pnlSonuc.Width  = frmSonuc.clWidth*90/100;
+  pnlSonuc.Height = frmSonuc.clHeight*80/100;
+  pnlSonuc.Margins.top=frmSonuc.clheight*7/100;
+  pnlSonuc.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#ffffff');
+  pnlSonuc.clProSettings.RoundHeight = 10;
+  pnlSonuc.clProSettings.RoundWidth = 10;
+  pnlSonuc.clProSettings.BorderWidth = 1;
+  pnlSonuc.visible  = True;
+  {
+    grdHareket  = frmSonuc.AddNewStringGrid(pnlSonuc, 'grdHareket');
+    grdHareket.Align = alClient;
+  }
+  frmSonuc.AddNewEvent(btnGetir,tbeOnClick,'setWithSerialCode');
+  /*
+  
+  */
+  frmSonuc.run;
+}
+
+
+{
+  Myform = TCLForm.Create(Self);
+  Zcontents.setApis;
+  
+  pnlMain=Myform.AddNewProPanel(Myform,'pnlMain');
+  pnlMain.Align = alClient;
+  
+  
+  pnlGiris=Myform.AddNewProPanel(pnlMain,'pnlGiris');
+  pnlGiris.Align = alcenter;
+  pnlGiris.Width  = pnlMain.Width*60/100;
+  pnlGiris.Height = pnlMain.Height*80/100;
+  {
+    btnMusteriCek = Myform.AddNewProButton(pnlGiris,'btnMusteriCek', 'Müsteri çek');
+    btnMusteriCek.Hint='1';
+    btnMusteriCek.Align=altop;
+    btnMusteriCek.Margins.top=pnlMain.Height*3/100;
+    btnMusteriCek.Margins.Left=20;
+    btnMusteriCek.Margins.Right=20;
+    btnMusteriCek.Height=pnlGiris.Height*15/100;
+    btnMusteriCek.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#17d998');
+    btnMusteriCek.clProSettings.BorderColor = clAlphaColor.clHexToColor('#000000');
+    btnMusteriCek.clProSettings.RoundHeight = 10;
+    btnMusteriCek.clProSettings.RoundWidth = 10;
+    btnMusteriCek.clProSettings.FontSize = 22;
+    btnMusteriCek.clProSettings.BorderWidth=1;
+    btnMusteriCek.clProSettings.TextSettings.Font.Style = [fsBold];
+    btnMusteriCek.SetclProSettings(btnMusteriCek.clProSettings);
+    
+    btnBorcCek = Myform.AddNewProButton(pnlGiris,'btnBorcCek', 'Borc çek');
+    btnBorcCek.Hint='2';
+    btnBorcCek.Align=altop;
+    btnBorcCek.Margins.top=pnlMain.Height*3/100;
+    btnBorcCek.Margins.Left=20;
+    btnBorcCek.Margins.Right=20;
+    btnBorcCek.Height=pnlGiris.Height*15/100;
+    btnBorcCek.SetclProSettings(btnMusteriCek.clProSettings);
+    
+    btnMusteriSenet = Myform.AddNewProButton(pnlGiris,'btnMusteriSenet', 'Müsteri Senet');
+    btnMusteriSenet.Hint='3';
+    btnMusteriSenet.Align=altop;
+    btnMusteriSenet.Margins.top=pnlMain.Height*3/100;
+    btnMusteriSenet.Margins.Left=20;
+    btnMusteriSenet.Margins.Right=20;
+    btnMusteriSenet.Height=pnlGiris.Height*15/100;
+    btnMusteriSenet.SetclProSettings(btnMusteriCek.clProSettings);
+    
+    btnBorcSenet = Myform.AddNewProButton(pnlGiris,'btnBorcSenet', 'Borc Senet');
+    btnBorcSenet.Hint='4';
+    btnBorcSenet.Align=altop;
+    btnBorcSenet.Margins.top=pnlMain.Height*3/100;
+    btnBorcSenet.Margins.Left=20;
+    btnBorcSenet.Margins.Right=20;
+    btnBorcSenet.Height=pnlGiris.Height*15/100;
+    btnBorcSenet.SetclProSettings(btnMusteriCek.clProSettings);
+    
+    btnSearch = Myform.AddNewProButton(pnlGiris,'btnSearch', 'Seri-no ile çek ara');
+    btnSearch.Hint='9';
+    btnSearch.Align=altop;
+    btnSearch.Margins.top=pnlMain.Height*3/100;
+    btnSearch.Margins.Left=20;
+    btnSearch.Margins.Right=20;
+    btnSearch.Height=pnlGiris.Height*15/100;
+    btnSearch.SetclProSettings(btnMusteriCek.clProSettings);
+  }
+  
+  Myform.AddNewEvent(btnMusteriCek, tbeOnClick, 'setSonucForm'); 
+  Myform.AddNewEvent(btnBorcCek, tbeOnClick, 'setSonucForm'); 
+  Myform.AddNewEvent(btnMusteriSenet, tbeOnClick, 'setSonucForm'); 
+  Myform.AddNewEvent(btnBorcSenet, tbeOnClick, 'setSonucForm'); 
+  Myform.AddNewEvent(btnSearch, tbeOnClick, 'setSearchForm'); 
+  
+  
+  Myform.Run;
+}

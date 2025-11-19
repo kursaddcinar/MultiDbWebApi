@@ -1,0 +1,74 @@
+var
+  clourPnlMain,clourPnlBack,clourPnlExtra  : String;
+  clourResult : String;
+  
+  clourBtnNorm,clourBtnExtra,clourBtnBack,ClourBtnOk  : String;
+  clourEdtInput,clourEdtExtra  : String;
+  
+  
+  //  Api tanimlari
+  getUsers,
+  getCariSB,  getCariHR,  getCariRehber,
+  getStokSB,  getStokHR,  getStokRehber,
+  getBankaSB, getBankaHR,
+  getKasaSB,  getKasaHR,
+  getCekSenet,getCekSenetWSerial,
+  getIsEmriSB,getIsEmriHR,
+  getReceteSB,getReceteHR,
+  getUretim,  getUretimRehber,  setUretim
+  :String;
+  
+  //  gorsel tanimlari
+  strImg100,strImg101,strImg102  :  String;
+  
+void getCompenentClour;
+{
+  {//renk paltlerine göre renkleri ayarla.
+    
+    clourPnlMain  = '#ffffff';
+    clourPnlBack  = '#9DBDFF';
+    clourPnlExtra = 'bbb';
+    clourResult   = 'ccc';
+    
+    ClourBtnOk    = '#FF9874';
+    clourBtnNorm  = 'ddd';
+    clourBtnExtra = 'eee';
+    clourBtnBack  = 'fff';
+    
+    clourEdtInput  = '#FFD7C4';
+    clourEdtExtra = 'iii';
+  }
+}
+
+void setApis;
+{
+  getUsers      = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLUSERS/GetUsers' ;
+
+  getCariSB     = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLCARISB/GetCariSB' ;
+  getCariHR     = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLCARIHR/GetCariHR' ;
+  getCariRehber = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLCARIREHBER/GetCariREHBER' ;
+  
+  getStokSB     = 'https://www.SUBDOMAİN.SIRKET:5050/ClApi/api/TBLSTOKSBController2/GetStokSB2' ;
+  getStokHR     = 'https://www.SUBDOMAİN.SIRKET:5050/ClApi/api/TBLSTOKHR/GetStokHR' ;
+  getStokRehber = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLSTOKREHBER/GetStokREHBER' ;
+  
+  getBankaSB    = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLBankaSB/GetBankaSB' ;
+  getBankaHR    = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLBankaHR/GetBankaHR' ;
+  
+  getKasaSB     = 'https://www.SUBDOMAİN.SIRKET:5050/ClApi/api/TBLKasaSB/GetKasaSB' ;
+  getKasaHR     = 'https://www.SUBDOMAİN.SIRKET:5050/ClApi/api/TBLKasaHR/GetKasaHR' ;
+  
+  getCekSenet   = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLCEKSENET/GetCekSenet' ;
+  getCekSenetWSerial  = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLCEKSENETwithSERIAL/GetCekSenetSerial' ;
+  
+  getIsEmriSB   = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLISEMRISB/GetIsEmriSB' ;
+  getIsEmriHR   = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLISEMRIHR/GetIsEmriHR' ;
+  
+  getReceteSB   = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLReceteSB/GetReceteSB' ;
+  getReceteHR   = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLReceteHR/GetReceteHR' ;
+  
+  getUretim     = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLURETIM/GetUretim' ;
+  getUretimRehber = '';
+  setUretim     = 'https://www.SUBDOMAİN.SIRKET.com:5050/ClApi/api/TBLURETIMKABUL/execute'  ;
+}
+

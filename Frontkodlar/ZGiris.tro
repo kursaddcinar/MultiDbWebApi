@@ -1,0 +1,497 @@
+  uses Zcontents;
+  var
+  userInformation,tempList,databases: TclStringList;
+
+  loginForm:TCLForm;
+  btnLogin,hiddenpasswordbtn,shwpasswordbtn:TClProButton;
+  lblKulAdi ,lblPassword: TClProLabel;
+  edtKulAdi,edtPassword:TclProEdit;
+  pnlLogo,pnlComponents,pnlImgSecimButtonBackground : TclProPanel;
+  nTitresim:TclDeviceManager;
+  imgLogo,testImg ,userImg,PasswordImg,EyeOnImg,EyeOffImf,imgLoginBtn,imgSecimBackground: TClProImage;
+  userID : String;
+  clRest : TCLRest;
+  mainMenu  : TCLUnit;
+  deneme:String;
+  secimFrm  : TCLForm;
+  
+  
+  denemeForm : TCLForm;
+  btndeneme : TClProButton;
+
+/// SIFRE GÖSTER-GIZLE FONKSIYONLARI
+void showpasswordbtnclick;
+{
+  if not Assigned(hiddenpasswordbtn)
+  {
+    hiddenpasswordbtn = loginForm.AddNewProButton(edtPassword,'hiddenpasswordbtn', 'x');
+    hiddenpasswordbtn.Align=alMostRight;
+    hiddenpasswordbtn.Height=40;
+    hiddenpasswordbtn.Width=40;
+    hiddenpasswordbtn.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#8fbbc6');
+    hiddenpasswordbtn.SetclProSettings(shwpasswordbtn.clProSettings);
+    
+     EyeOnImg=loginForm.AddNewProImage(hiddenpasswordbtn,'EyeOnImg');
+     EyeOnImg.Align=alCenter;
+     EyeOnImg.Height=40;
+     EyeOnImg.Width=30;
+     EyeOnImg.clProSettings.PictureSource='https://cdn-icons-png.freepik.com/512/3694/3694203.png';
+     EyeOnImg.SetclProSettings(EyeOnImg.clProSettings);
+    
+    loginForm.AddNewEvent(EyeOnImg,tbeOnClick,'hiddenpasswordbtnclick');
+  }
+    else
+    {
+      hiddenpasswordbtn.Visible=True;
+   
+    }
+    edtPassword.Password=False;
+    shwpasswordbtn.Visible=False;
+}
+ 
+ /// SIFRE GÖSTER-GIZLE FONKSIYONLARI
+ 
+void hiddenpasswordbtnclick;
+{
+  try 
+    if not Assigned(shwpasswordbtn)
+    {
+      shwpasswordbtn = loginForm.AddNewProButton(edtPassword,'shwpasswordbtn', '');
+      shwpasswordbtn.Align=alMostRight;
+      shwpasswordbtn.Height=40;
+      shwpasswordbtn.Width=40;
+      shwpasswordbtn.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#8fbbc6');
+      shwpasswordbtn.SetclProSettings(shwpasswordbtn.clProSettings);
+      
+      loginForm.AddNewEvent(EyeOffImf,tbeOnClick,'showpasswordbtnclick');
+    }
+    else
+    {
+      shwpasswordbtn.Visible=True;
+    }
+    edtPassword.Password=True;
+    hiddenpasswordbtn.Visible=False;
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message: ' +LastExceptionMessage);
+  }
+}
+
+void GoToMainMenu;//cariye gecis proseduru
+{
+  loginForm.clShow;
+  mainMenu.UnitName = 'ZMainMenu';
+  mainMenu.CallerForm = loginForm;
+  mainMenu.Run;
+}
+
+void setDb(db : String);
+{ 
+  Clomosy.GlobalVariableStringList.add(db);
+  GoToMainMenu;
+}
+
+function dbParcala( InputDB: string): TclStringList;
+var
+  StrList: TclStringList;
+  tempStr : string;
+{
+  tempStr = InputDB;
+  StrList = Clomosy.StringListNew;
+  try
+    // Eger giris dizesi bos degilse ve virgül içeriyorsa islemleri gerçeklestir
+    // Virgül ile ayir ve StringList'e ekle
+    while( tempStr <> '')
+    {
+      if ( Pos(',', tempStr) > 0 )
+      {
+        StrList.add(  clGetStringTo(tempStr,',')  );
+        tempStr = clGetStringReplace(tempStr, clGetStringTo(tempStr,',')+','  ,'');
+      }
+      else
+      {
+        StrList.add(tempStr);
+        tempStr = '';
+      }
+    }
+
+    // Sonucu döndür
+    Result = StrList;
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message021: ' +LastExceptionMessage);
+  }
+}
+
+void getCLSender;
+var
+  clickedBtn:TClProButton;
+{
+  clickedBtn = TClProButton(secimFrm.Clsender);
+  //ShowMessage(clickedBtn.Caption);
+  setDb(clickedBtn.Caption);
+}
+
+void sirketSecForm;
+Var
+  testImg : TClProImage;
+  pnlSecim  : TclProPanel;
+  btnSecim  : TClProButton;
+  i : Integer;
+  tempDBs : TclStringList;
+{
+  secimFrm  = TCLForm.Create(Self);;
+  tempDBs = dbParcala(Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4));
+  
+  testImg = secimFrm.AddNewProImage(secimFrm,'testImg');
+  clComponent.SetupComponent(testImg,
+  '{"Align" : "client",
+  "ImgUrl":"https://e0.pxfuel.com/wallpapers/96/70/desktop-wallpaper-red-and-black-iphone-posted-black-and-red-abstract.jpg",
+  "ImgFit":"yes",
+  "ImgStretch":"yes"}');
+  
+  pnlSecim=secimFrm.AddNewProPanel(secimFrm, 'pnlSecim');
+  pnlSecim.Align=alcenter;
+  pnlSecim.Width  = secimFrm.clwidth*40/100;
+  pnlSecim.Height  = secimFrm.clheight*80/100;
+  try
+    for(i=0 to (tempDBs.count)-1 )
+    {
+      btnSecim  = secimFrm.AddNewProButton(pnlSecim, 'btn'+IntToStr(i) , Clomosy.StringListItemString(tempDBs,i));
+      btnSecim.Align=alTop;
+      btnSecim.Width  = pnlSecim.width*80/100;
+      btnSecim.Height  = pnlSecim.height*18/100;
+      btnSecim.clProSettings.FontSize = 19;
+      btnSecim.clProSettings.TextSettings.Font.Style = [fsBold];
+      btnSecim.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+      //btnSecim.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#5a9f36');
+      //btnSecim.clProSettings.RoundHeight = 10;
+      //btnSecim.clProSettings.RoundWidth = 10;
+      //btnSecim.clProSettings.BorderWidth = 3;
+      //btnSecim.clProSettings.BorderColor = clAlphaColor.clHexToColor('#a10c0c');
+      btnSecim.clProSettings.PictureSource='https://r.resimlink.com/PF9hwIRf_c-.png';
+      btnSecim.SetclProSettings(btnSecim.clProSettings);
+      /*
+        pnlImgSecimButtonBackground = secimFrm.AddNewProPanel(btnSecim, 'pnlImgSecimButtonBackground'+IntToStr(i));
+        pnlImgSecimButtonBackground.Align=alcenter;
+        pnlImgSecimButtonBackground.Margins.top = btnSecim.Height*15/1000;
+        pnlImgSecimButtonBackground.Margins.Bottom = btnSecim.Height*15/1000;
+        pnlImgSecimButtonBackground.Margins.left = btnSecim.Width*15/1000;
+        pnlImgSecimButtonBackground.Margins.Right = btnSecim.Width*15/1000;
+        pnlImgSecimButtonBackground.Width  = btnSecim.width*97/100;
+        pnlImgSecimButtonBackground.Height  = btnSecim.height*97/100;
+        pnlImgSecimButtonBackground.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#6bb521');
+        pnlImgSecimButtonBackground.clProSettings.RoundHeight = btnSecim.Height*12/100;
+        pnlImgSecimButtonBackground.clProSettings.RoundWidth = btnSecim.Width*5/100;
+        pnlImgSecimButtonBackground.clProSettings.PictureAutoFit = True;
+        pnlImgSecimButtonBackground.clProSettings.PictureStretch = true;
+        pnlImgSecimButtonBackground.SetclProSettings(pnlImgSecimButtonBackground.clProSettings);
+      
+        imgSecimBackground=secimFrm.AddNewProImage(btnSecim,'imgSecimBackground'+IntToStr(i));
+        imgSecimBackground.Align=alClient;
+        //clComponent.SetupComponent(imgSecimBackground,'{ "RoundHeight":10,"RoundWidth":10}');
+        imgSecimBackground.clProSettings.RoundHeight = 10;
+        imgSecimBackground.clProSettings.RoundWidth = 10;
+        imgSecimBackground.clProSettings.PictureSource='https://r.resimlink.com/OgGu4CAtvFa.png';
+        imgSecimBackground.SetclProSettings(imgSecimBackground.clProSettings);
+        
+        clRTMethod(imgSecimBackground, 'SendToBack');
+       */ 
+      
+      /*btnSecim.clProSettings.PictureAutoFit = True;
+      btnSecim.clProSettings.PictureStretch = True;
+      btnSecim.clProSettings.PictureSource  ='https://img.freepik.com/free-vector/realistic-polygonal-background_23-2148921891.jpg';
+      */
+      
+      if(i<>0)
+        btnSecim.Margins.Top=pnlSecim.height*4/100;
+      
+      secimFrm.AddNewEvent(btnSecim,tbeOnClick,'getCLSender');
+    }
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message039: ' +LastExceptionMessage);
+  }
+  
+  secimFrm.Run;
+}
+
+void dbControl;
+var
+  db  : string;
+{
+  try
+    db  = Clomosy.StringListItemString(Clomosy.GlobalVariableStringList,4);
+    //ShowMessage(  clGetStringTo('a,b,c',',') );
+    //ShowMessage(  clGetStringReplace('a,b,c',clGetStringTo('a,b,c',',')+',','') );
+    
+    if( (db <> '')  )//
+    {
+      if(  (Pos(',', db) > 0))
+        sirketSecForm;
+      else
+      {
+        userInformation.Add('NULL');//17.bilgi 16. index
+        GoToMainMenu;
+      }
+    }
+    else
+      GoToMainMenu;
+  except
+    ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message052: ' +LastExceptionMessage);
+  }
+}
+
+function FFNDEC( InputStr: string): string;
+var
+  X, Len: Integer;
+  ResultStr: string;
+{
+  Len = Length(InputStr);
+  ResultStr = '';
+  
+  for (X = 1 to Len )
+  {
+    if (X mod 2 == 0) 
+      ResultStr = ResultStr + Chr(Ord(InputStr[X]) - 1); // Çift index: ASCII'yi azalt
+    else
+      ResultStr = ResultStr + Chr(Ord(InputStr[X]) + 1); // Tek index: ASCII'yi artir
+  }
+  
+  Result = ResultStr;
+}
+
+function FFNENC( InputStr: string): string;
+var
+  X, Len: Integer;
+  ResultStr: string;
+{
+  Len = Length(InputStr);
+  ResultStr = '';
+  
+  for (X= 1 to Len )
+  {
+    if (X mod 2 == 0) 
+      ResultStr = ResultStr + Chr(Ord(InputStr[X]) + 1); // Çift index: ASCII'yi artir
+    else
+      ResultStr = ResultStr + Chr(Ord(InputStr[X]) - 1); // Tek index: ASCII'yi azalt
+  }
+  
+  Result = ResultStr;
+}
+
+void loginControl;
+Var
+  JSONObject: TCLJSONQuery;
+  clRest  : TCLRest;
+  i : Integer;
+{ 
+  clRest=TCLRest.Create;
+  
+  try
+      clRest.BaseURL =  Zcontents.getUsers;
+      
+      clRest.Accept = 'application/json';
+      clRest.Method = rmPOST;
+      //ShowMessage(FFNENC(edtKulAdi.Text)+'------'+FFNENC(edtPassword.Text));
+      clRest.AddBody('{"kulAdi":"'+FFNENC(edtKulAdi.Text)+'","kulSifre":"'+FFNENC((edtPassword.Text))+'","extraParam": "x18"}', 'application/json');
+      clRest.Execute;
+      
+      JSONObject = Clomosy.ClDataSetFromJSON(clRest.Response);
+      
+      if(JSONObject.Found)
+      {
+        if(JSONObject.FieldByName('SONUC').AsString == 9)
+        {
+          userInformation = Clomosy.StringListNew;
+          
+          userInformation.Add(JSONObject.FieldByName('SONUC').AsString);
+          userInformation.Add(JSONObject.FieldByName('USER_REC_NO').AsString);
+          userInformation.Add(JSONObject.FieldByName('KUL_ISIM').AsString);
+          userInformation.Add(JSONObject.FieldByName('KUL_EPOSTA').AsString);
+          userInformation.Add(JSONObject.FieldByName('KUL_DB').AsString);
+          userInformation.Add(JSONObject.FieldByName('KUL_DB_SAYI').AsString);
+          userInformation.Add(JSONObject.FieldByName('cari').AsString);
+          userInformation.Add(JSONObject.FieldByName('STOK').AsString);
+          userInformation.Add(JSONObject.FieldByName('BELGE').AsString);
+          userInformation.Add(JSONObject.FieldByName('KASA').AsString);
+          userInformation.Add(JSONObject.FieldByName('BANKA').AsString);
+          userInformation.Add(JSONObject.FieldByName('CEKSENET').AsString);
+          userInformation.Add(JSONObject.FieldByName('MUHASEBE').AsString);
+          userInformation.Add(JSONObject.FieldByName('RAPOR').AsString);
+          userInformation.Add(JSONObject.FieldByName('siparisler').AsString);
+          userInformation.Add(JSONObject.FieldByName('satinalimlar').AsString);
+          userInformation.Add(JSONObject.FieldByName('uretim').AsString);//17.bilgi 16. index
+          
+          Clomosy.GlobalVariableStringList = userInformation;
+          dbControl;
+        }
+        else
+          ShowMessage('giris bilgisi HATALI');
+      }
+      else
+        ShowMessage('kisi bulunamadi');
+    except
+    {
+      ShowMessage('Exception class: '+LastExceptionClassName+' Exception Message0055: ' +LastExceptionMessage);
+      //ShowMessage('GIRIS BILGISI HATALI');
+    }
+      
+
+  }
+}
+  
+  
+void setimagebg;
+{
+  testImg = loginForm.AddNewProImage(loginForm,'testImg');
+  clComponent.SetupComponent(testImg,
+  '{"Align" : "Contents",
+  "ImgUrl":"https://e0.pxfuel.com/wallpapers/96/70/desktop-wallpaper-red-and-black-iphone-posted-black-and-red-abstract.jpg",
+  "ImgFit":"yes",
+  "ImgStretch":"yes"}');
+}
+
+{
+
+  loginForm = TCLForm.Create(Self);
+  Zcontents.setApis;
+  deneme='deneme string';
+  TclButton(loginForm.clFindComponent('LytTopBar')).Visible = False;
+  //nTitresim= TclDeviceManager.Create;
+  mainMenu  = TCLUnit.Create;
+  
+  setimagebg;
+  
+  pnlLogo=loginForm.AddNewProPanel(loginForm,'pnlLogo');
+  pnlLogo.Align = alCenter;
+  pnlLogo.Height  = loginForm.clheight*17/100;
+  pnlLogo.Width   = loginForm.clheight*17/100;
+  pnlLogo.Margins.Bottom  = loginForm.clheight*60/100;
+  //pnlLogo.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#dbff29');
+  pnlLogo.SetclProSettings(pnlLogo.clProSettings);
+  
+    imgLogo=loginForm.AddNewProImage(pnlLogo,'imgLogo');
+    imgLogo.Align=alClient;
+    imgLogo.clProSettings.PictureSource='https://r.resimlink.com/FScJt2-w_C18.png';
+    imgLogo.SetclProSettings(imgLogo.clProSettings);
+  
+  pnlComponents=loginForm.AddNewProPanel(loginForm,'pnlComponents');
+  pnlComponents.Align = alCenter;
+  pnlComponents.Height=350;
+  pnlComponents.Width=300;
+  pnlComponents.Margins.Left=30;
+  pnlComponents.Margins.Right=30;
+  pnlComponents.Margins.Top=20;
+  pnlComponents.clProSettings.BorderWidth = 3;
+  pnlComponents.clProSettings.RoundHeight = 10;
+  pnlComponents.clProSettings.RoundWidth = 10;
+  pnlComponents.clProSettings.Istransparent = True;
+  pnlComponents.clProSettings.IsFill = False; 
+  pnlComponents.clProSettings.IsRound = True;
+  pnlComponents.SetclProSettings(pnlComponents.clProSettings);
+  
+  lblKulAdi=loginForm.AddNewProLabel(pnlComponents, 'lblKulAdi', 'Kullanici Adi');
+  lblKulAdi.Align=alNone;
+  lblKulAdi.Position.X=10;
+  lblKulAdi.Position.y=30;
+  lblKulAdi.clProSettings.FontSize = 20;
+  lblKulAdi.clProSettings.FontColor = clAlphaColor.clHexToColor('#d61f1f');
+  lblKulAdi.SetclProSettings(lblKulAdi.clProSettings);
+
+  edtKulAdi=loginForm.AddNewProEdit(pnlComponents,'edtKulAdi', '');
+  edtKulAdi.Align=alNone;
+  edtKulAdi.Height=40;
+  edtKulAdi.Width=280;
+  edtKulAdi.Margins.Right=50;
+  edtKulAdi.clProSettings.BorderWidth=1;
+  edtKulAdi.clProSettings.BorderColor = clAlphaColor.clHexToColor('#d61f1f');
+  edtKulAdi.clProSettings.FontColor = clAlphaColor.clHexToColor('#d61f1f');
+  edtKulAdi.clProSettings.Istransparent = False;
+  edtKulAdi.clProSettings.IsFill = False; 
+  edtKulAdi.clProSettings.RoundHeight = 10;
+  edtKulAdi.clProSettings.RoundWidth = 10;
+  edtKulAdi.Position.X=10;
+  edtKulAdi.Position.y=70;
+  edtKulAdi.SetclProSettings(edtKulAdi.clProSettings);
+  //edtKulAdi.Text='KURSAT';
+  
+  userImg=loginForm.AddNewProImage(edtKulAdi,'userImg');
+  userImg.Align=alLeft;
+  userImg.Margins.Left=3;
+  userImg.Height=30;
+  userImg.Width=30;
+  userImg.clProSettings.PictureSource='https://cdn-icons-png.freepik.com/512/8762/8762285.png';
+  userImg.SetclProSettings(userImg.clProSettings);
+  
+  lblPassword=loginForm.AddNewProLabel(pnlComponents,'lblPassword','Parola');
+  lblPassword.Align=alNone;
+  lblPassword.Position.X=10;
+  lblPassword.Position.y=140;
+  lblPassword.clProSettings.FontSize = 20;
+  lblPassword.clProSettings.FontColor = clAlphaColor.clHexToColor('#d61f1f');
+  lblPassword.SetclProSettings(lblPassword.clProSettings)
+  
+  edtPassword=loginForm.AddNewProEdit(pnlComponents,'edtPassword', '');
+  edtPassword.Align=alNone;
+  edtPassword.Height=40;
+  edtPassword.Width=280;
+  edtPassword.Position.X=10;
+  edtPassword.Position.y=180;
+  edtPassword.Margins.Right=50;
+  edtPassword.clProSettings.BorderWidth=1;
+  edtPassword.clProSettings.Istransparent = False;
+  edtPassword.clProSettings.IsFill = False; 
+  edtPassword.clProSettings.RoundHeight = 10;
+  edtPassword.clProSettings.RoundWidth = 10;
+  edtPassword.clProSettings.BorderColor = clAlphaColor.clHexToColor('#d61f1f');
+  edtPassword.clProSettings.FontColor = clAlphaColor.clHexToColor('#000000');
+  edtPassword.SetclProSettings(edtPassword.clProSettings);
+  //edtPassword.clTypeOfField = taString;
+  edtPassword.Password=True;
+  //edtPassword.Text = '12349';
+  
+  PasswordImg=loginForm.AddNewProImage(edtPassword,'PasswordImg');
+  PasswordImg.Align=alLeft;
+  PasswordImg.Margins.Left=3;
+  PasswordImg.Height=30;
+  PasswordImg.Width=30;
+  PasswordImg.clProSettings.PictureSource='https://cdn-icons-png.freepik.com/512/11191/11191096.png';
+  PasswordImg.SetclProSettings(PasswordImg.clProSettings);
+  
+  
+  btnLogin = loginForm.AddNewProButton(pnlComponents,'btnLogin', 'GIRIS');
+  btnLogin.Align=alBottom;
+  btnLogin.Margins.Bottom=40;
+  btnLogin.Margins.Left=20;
+  btnLogin.Margins.Right=20;
+  btnLogin.Height=pnlComponents.Height*16/100;
+  btnLogin.Width=pnlComponents.Width*75/100;
+  btnLogin.clProSettings.BorderWidth=1;
+  btnLogin.clProSettings.BackgroundColor = clAlphaColor.clHexToColor('#d61f1f');
+  btnLogin.clProSettings.BorderColor = clAlphaColor.clHexToColor('#ffffff');
+  btnLogin.clProSettings.RoundHeight = 10;
+  btnLogin.clProSettings.RoundWidth = 10;
+  btnLogin.clProSettings.FontColor = clAlphaColor.clHexToColor('#ffffff');
+  btnLogin.clProSettings.FontSize = 25;
+  btnLogin.clProSettings.TextSettings.Font.Style = [fsBold];
+  btnLogin.SetclProSettings(btnLogin.clProSettings);
+ 
+  
+  shwpasswordbtn = loginForm.AddNewProButton(edtPassword,'shwpasswordbtn', '');
+  shwpasswordbtn.Align=alMostRight;
+  shwpasswordbtn.Height=40;
+  shwpasswordbtn.Width=edtPassword.Width*15/100;
+  shwpasswordbtn.SetclProSettings(shwpasswordbtn.clProSettings);
+ 
+  EyeOffImf=loginForm.AddNewProImage(shwpasswordbtn,'EyeOffImf');
+  EyeOffImf.Align=alCenter;
+  EyeOffImf.Height=20;
+  EyeOffImf.Width=20;
+  EyeOffImf.clProSettings.PictureSource='https://cdn-icons-png.freepik.com/512/3694/3694208.png';
+  EyeOffImf.SetclProSettings(EyeOffImf.clProSettings);
+ 
+  
+  
+  loginForm.AddNewEvent(EyeOffImf,tbeOnClick,'showpasswordbtnclick');
+  loginForm.AddNewEvent(btnLogin, tbeOnClick, 'loginControl'); 
+  
+  loginForm.Run;
+ }
