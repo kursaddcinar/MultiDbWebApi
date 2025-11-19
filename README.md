@@ -205,6 +205,11 @@ Uygulamanın canlı ortamdaki çalışma görüntüleri:
 |:---:|:---:|
 | ![Giriş Ekranı](screenshots/giris-sirektSecim-anasayfa.png) | ![Cari Modül](screenshots/ornekModul1cari.png) |
 
+| Üretim Modülü | Depo Sayım Modülü |
+|:---:|:---:|
+| ![Üretim Modülü](screenshots/ornekModul2Uretim.png) | ![Depo Sayım](screenshots/ornekModul3depoSayim.png) |
+
+
 
 ## 📄 Lisans
 
@@ -213,7 +218,3 @@ Bu proje [MIT License](LICENSE) altında lisanslanmıştır.
 ## 📞 İletişim
 
 Proje ile ilgili sorularınız için issue açabilirsiniz. 
-
-| Üretim Modülü | Depo Sayım Modülü |
-|:---:|:---:|
-| ![Üretim Modülü](screenshots/ornekModul2Uretim.png) | ![Depo Sayım](screenshots/ornekModul3depoSayim.png) |
