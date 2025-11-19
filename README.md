@@ -182,14 +182,6 @@ builder.Services.AddAuthentication(options =>
 3. **Stored Procedure İsimleri**:
    -  Bu projede bazı stored procedure isimleri (`FPROCBANKLIST`, `FPROCOPRSAVE` vb.) gösterilmiştir. Bunlar sadece örnek amaçlıdır ve iç yapıları veya içerikleri paylaşılmamaktadır. Gerçek veritabanı şeması veya prosedür içeriği açıklanmamıştır.
 
-## 📄 Lisans
-
-Bu proje [MIT License](LICENSE) altında lisanslanmıştır.
-
-## 📞 İletişim
-
-Proje ile ilgili sorularınız için issue açabilirsiniz. 
-
 ---
 
 ## 📱 Mobil Arayüz (Frontend)
@@ -212,6 +204,15 @@ Uygulamanın canlı ortamdaki çalışma görüntüleri:
 | Giriş & Şirket Seçimi | Cari İşlemler Modülü |
 |:---:|:---:|
 | ![Giriş Ekranı](screenshots/giris-sirektSecim-anasayfa.png) | ![Cari Modül](screenshots/ornekModul1cari.png) |
+
+
+## 📄 Lisans
+
+Bu proje [MIT License](LICENSE) altında lisanslanmıştır.
+
+## 📞 İletişim
+
+Proje ile ilgili sorularınız için issue açabilirsiniz. 
 
 | Üretim Modülü | Depo Sayım Modülü |
 |:---:|:---:|
