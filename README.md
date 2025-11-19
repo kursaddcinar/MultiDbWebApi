@@ -189,3 +189,30 @@ Bu proje [MIT License](LICENSE) altında lisanslanmıştır.
 ## 📞 İletişim
 
 Proje ile ilgili sorularınız için issue açabilirsiniz. 
+
+---
+
+## 📱 Mobil Arayüz (Frontend)
+
+Bu projenin ön yüzü, Atiker Yazılım'ın mobil uygulama geliştirme platformu **Clomosy** ve **TrObject** dili kullanılarak geliştirilmiştir. Backend servisleri ile tam entegre çalışan bu mobil uygulama, sahadaki personelin ERP verilerine erişimini ve veri girişini sağlar.
+
+### 🚀 Proje Kapsamı ve Özellikler
+* **ERP Entegrasyonu:** Mevcut ERP platformuna subdomain üzerinden entegre olan ve .NET backend servislerini tüketen hibrid yapı.
+* **Uçtan Uca Geliştirme:** Arayüz tasarımı ve kodlama süreçleri sıfırdan geliştirilmiştir.
+* **Modüler Yapı:** Üretim ve depo çalışanları için yetki bazlı erişim, canlı veri girişi, depo sayımı ve raporlama modülleri.
+* **Canlı Kullanım (Production):** Sistem gerçek bir firma ortamında devreye alınmış, üretim bandı ve depoda aktif olarak kullanılmaktadır.
+* **Süreklilik:** Kullanıcı geri bildirimleri (feedback) analiz edilerek UI/UX ve fonksiyonel iyileştirmeler düzenli olarak yapılmaktadır.
+
+### 📂 Frontend Kodları
+Mobil uygulamanın Clomosy/TrObject ile yazılmış kaynak kod örneklerine repo içerisindeki `Frontkodlar` klasöründen erişebilirsiniz.
+
+### 📸 Ekran Görüntüleri
+Uygulamanın canlı ortamdaki çalışma görüntüleri:
+
+| Giriş & Şirket Seçimi | Cari İşlemler Modülü |
+|:---:|:---:|
+| ![Giriş Ekranı](screenshots/giris-sirektSecim-anasayfa.png) | ![Cari Modül](screenshots/ornekModul1cari.png) |
+
+| Üretim Modülü | Depo Sayım Modülü |
+|:---:|:---:|
+| ![Üretim Modülü](screenshots/ornekModul2Uretim.png) | ![Depo Sayım](screenshots/ornekModul3depoSayim.png) |
